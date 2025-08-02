@@ -1,0 +1,382 @@
+<div class="tw-space-y-6">
+    <!-- Web Component Header -->
+    <div class="tw-flex tw-items-center tw-justify-between">
+        <div>
+            <h4 class="tw-text-lg tw-font-semibold theme-text-primary">
+                Web Component Registry
+            </h4>
+            <p class="tw-text-sm theme-text-secondary tw-mt-1">
+                Manage and deploy web components
+            </p>
+        </div>
+
+        <div class="tw-flex tw-gap-2">
+            <button nz-button nzType="primary" nzSize="small" (click)="registerNewComponent()" class="theme-transition">
+                <i nz-icon nzType="plus"></i>
+                Register Component
+            </button>
+
+            <button nz-button nzType="default" nzSize="small" (click)="importComponents()" class="theme-transition">
+                <i nz-icon nzType="upload"></i>
+                Import
+            </button>
+
+            <button nz-button nzType="default" nzSize="small" (click)="refreshComponents()" class="theme-transition">
+                <i nz-icon nzType="reload"></i>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="tw-text-center tw-py-12">
+        <nz-spin nzTip="Loading web components..." nzSize="large"></nz-spin>
+    </div>
+
+    <!-- Component Registry -->
+    <div *ngIf="!isLoading">
+
+        <!-- Registry Tabs -->
+        <nz-tabset nzType="card" [nzTabPosition]="'top'">
+
+            <!-- Registered Components -->
+            <nz-tab nzTitle="Registered Components">
+                <div class="tw-p-4 tw-space-y-4">
+
+                    <!-- Component Grid -->
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
+                        <nz-card *ngFor="let component of webComponents" [nzTitle]="component.name"
+                            [nzExtra]="componentActions"
+                            class="theme-bg-primary theme-border-primary theme-shadow-sm hover:theme-shadow-md tw-transition-all tw-duration-200">
+
+                            <div class="tw-space-y-3">
+                                <!-- Component Info -->
+                                <div class="tw-flex tw-items-center tw-justify-between">
+                                    <nz-tag [nzColor]="getComponentTypeColor(component.type)">
+                                        {{ component.type }}
+                                    </nz-tag>
+                                    <nz-tag [nzColor]="getStatusColor(component.status)">
+                                        {{ component.status }}
+                                    </nz-tag>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="tw-text-sm theme-text-secondary">
+                                    {{ component.description || 'No description available' }}
+                                </div>
+
+                                <!-- Version & Usage -->
+                                <div class="tw-grid tw-grid-cols-2 tw-gap-3 tw-text-xs">
+                                    <div class="tw-text-center tw-p-2 tw-rounded theme-bg-tertiary">
+                                        <div class="tw-font-semibold theme-text-primary">{{ component.version }}</div>
+                                        <div class="theme-text-secondary">Version</div>
+                                    </div>
+                                    <div class="tw-text-center tw-p-2 tw-rounded theme-bg-tertiary">
+                                        <div class="tw-font-semibold theme-text-primary">{{ component.usageCount || 0 }}
+                                        </div>
+                                        <div class="theme-text-secondary">Uses</div>
+                                    </div>
+                                </div>
+
+                                <!-- Component Properties -->
+                                <div *ngIf="component.properties && component.properties.length" class="tw-space-y-2">
+                                    <div class="tw-text-xs tw-font-medium theme-text-primary">Properties:</div>
+                                    <div class="tw-flex tw-flex-wrap tw-gap-1">
+                                        <nz-tag *ngFor="let prop of component.properties.slice(0, 3)" class="tw-text-xs"
+                                            [nzColor]="'default'">
+                                            {{ prop.name }}
+                                        </nz-tag>
+                                        <span *ngIf="component.properties.length > 3"
+                                            class="tw-text-xs theme-text-tertiary">
+                                            +{{ component.properties.length - 3 }} more
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="tw-flex tw-gap-2 tw-pt-3 tw-border-t theme-border-secondary">
+                                    <button nz-button nzSize="small" nzType="primary" (click)="loadComponent(component)"
+                                        class="tw-flex-1">
+                                        <i nz-icon nzType="play-circle"></i>
+                                        Load
+                                    </button>
+                                    <button nz-button nzSize="small" nzType="default"
+                                        (click)="previewComponent(component)">
+                                        <i nz-icon nzType="eye"></i>
+                                    </button>
+                                    <button nz-button nzSize="small" nzType="default"
+                                        (click)="editComponent(component)">
+                                        <i nz-icon nzType="edit"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <ng-template #componentActions>
+                                <nz-button-group nzSize="small">
+                                    <button nz-button nzType="default" (click)="downloadComponent(component)"
+                                        nz-tooltip="Download">
+                                        <i nz-icon nzType="download"></i>
+                                    </button>
+                                    <button nz-button nzType="default" (click)="shareComponent(component)"
+                                        nz-tooltip="Share">
+                                        <i nz-icon nzType="share-alt"></i>
+                                    </button>
+                                    <button nz-button nzDanger (click)="unregisterComponent(component)"
+                                        nz-tooltip="Unregister">
+                                        <i nz-icon nzType="delete"></i>
+                                    </button>
+                                </nz-button-group>
+                            </ng-template>
+                        </nz-card>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- Component Store -->
+            <nz-tab nzTitle="Component Store">
+                <div class="tw-p-4 tw-space-y-4">
+
+                    <!-- Store Search -->
+                    <div class="tw-flex tw-gap-4">
+                        <input nz-input [(ngModel)]="storeSearchTerm" (ngModelChange)="searchStore()"
+                            placeholder="Search component store..." class="tw-flex-1">
+
+                        <nz-select [(ngModel)]="storeCategory" (ngModelChange)="filterStore()" class="tw-w-40">
+                            <nz-option value="all" nzLabel="All Categories"></nz-option>
+                            <nz-option value="ui" nzLabel="UI Components"></nz-option>
+                            <nz-option value="forms" nzLabel="Form Controls"></nz-option>
+                            <nz-option value="layout" nzLabel="Layout"></nz-option>
+                            <nz-option value="data" nzLabel="Data Display"></nz-option>
+                        </nz-select>
+                    </div>
+
+                    <!-- Store Components -->
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+                        <nz-card *ngFor="let storeComponent of filteredStoreComponents" [nzTitle]="storeComponent.name"
+                            class="theme-bg-primary theme-border-primary">
+
+                            <div class="tw-space-y-3">
+                                <div class="tw-flex tw-items-center tw-justify-between">
+                                    <nz-tag [nzColor]="'blue'">{{ storeComponent.category }}</nz-tag>
+                                    <div class="tw-flex tw-items-center tw-gap-1">
+                                        <nz-rate [ngModel]="storeComponent.rating" nzDisabled [nzCount]="5"
+                                            class="tw-text-xs">
+                                        </nz-rate>
+                                        <span class="tw-text-xs theme-text-secondary">
+                                            ({{ storeComponent.downloads }})
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="tw-text-sm theme-text-secondary">
+                                    {{ storeComponent.description }}
+                                </div>
+
+                                <div class="tw-flex tw-items-center tw-justify-between tw-text-xs theme-text-tertiary">
+                                    <span>By {{ storeComponent.author }}</span>
+                                    <span>{{ storeComponent.size }}</span>
+                                </div>
+
+                                <div class="tw-flex tw-gap-2">
+                                    <button nz-button nzSize="small" nzType="primary"
+                                        (click)="installComponent(storeComponent)" class="tw-flex-1">
+                                        <i nz-icon nzType="download"></i>
+                                        Install
+                                    </button>
+                                    <button nz-button nzSize="small" nzType="default"
+                                        (click)="previewStoreComponent(storeComponent)">
+                                        <i nz-icon nzType="eye"></i>
+                                        Preview
+                                    </button>
+                                </div>
+                            </div>
+                        </nz-card>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- Component Builder -->
+            <nz-tab nzTitle="Component Builder">
+                <div class="tw-p-4 tw-space-y-6">
+
+                    <!-- Builder Form -->
+                    <nz-card nzTitle="Create Web Component" class="theme-bg-primary theme-border-primary">
+                        <div class="tw-space-y-4">
+
+                            <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+                                <div>
+                                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                        Component Name
+                                    </label>
+                                    <input nz-input [(ngModel)]="newComponent.name" placeholder="my-awesome-component"
+                                        class="tw-w-full">
+                                </div>
+
+                                <div>
+                                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                        Component Type
+                                    </label>
+                                    <nz-select [(ngModel)]="newComponent.type" class="tw-w-full">
+                                        <nz-option value="element" nzLabel="Custom Element"></nz-option>
+                                        <nz-option value="widget" nzLabel="Widget"></nz-option>
+                                        <nz-option value="layout" nzLabel="Layout Component"></nz-option>
+                                        <nz-option value="form" nzLabel="Form Control"></nz-option>
+                                    </nz-select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                    Description
+                                </label>
+                                <textarea nz-input [(ngModel)]="newComponent.description" rows="3"
+                                    placeholder="Describe your component..." class="tw-w-full">
+                    </textarea>
+                            </div>
+
+                            <div>
+                                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                    Component Code
+                                </label>
+                                <textarea class="tw-w-full tw-h-64 tw-font-mono tw-text-sm tw-p-3 tw-border tw-rounded
+                             theme-bg-primary theme-border-primary theme-text-primary" [(ngModel)]="newComponent.code"
+                                    placeholder="Enter your web component code here...">
+                    </textarea>
+                            </div>
+
+                            <div class="tw-flex tw-justify-between">
+                                <div class="tw-flex tw-gap-2">
+                                    <button nz-button nzType="default" (click)="loadTemplate()">
+                                        <i nz-icon nzType="file-text"></i>
+                                        Load Template
+                                    </button>
+                                    <button nz-button nzType="default" (click)="validateComponent()">
+                                        <i nz-icon nzType="check"></i>
+                                        Validate
+                                    </button>
+                                </div>
+
+                                <div class="tw-flex tw-gap-2">
+                                    <button nz-button nzType="default" (click)="previewNewComponent()">
+                                        <i nz-icon nzType="eye"></i>
+                                        Preview
+                                    </button>
+                                    <button nz-button nzType="primary" (click)="registerComponent()">
+                                        <i nz-icon nzType="plus"></i>
+                                        Register Component
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </nz-card>
+                </div>
+            </nz-tab>
+
+            <!-- Analytics -->
+            <nz-tab nzTitle="Analytics">
+                <div class="tw-p-4 tw-space-y-6">
+
+                    <!-- Usage Statistics -->
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-4 tw-gap-4">
+                        <nz-card class="tw-text-center theme-bg-primary theme-border-primary">
+                            <nz-statistic nzTitle="Total Components" [nzValue]="webComponents.length"
+                                [nzValueStyle]="{ color: themeService.isCustom() ? 'var(--theme-primary)' : '#1890ff' }">
+                            </nz-statistic>
+                        </nz-card>
+
+                        <nz-card class="tw-text-center theme-bg-primary theme-border-primary">
+                            <nz-statistic nzTitle="Active Components" [nzValue]="getActiveComponentCount()"
+                                [nzValueStyle]="{ color: themeService.isCustom() ? 'var(--theme-success)' : '#52c41a' }">
+                            </nz-statistic>
+                        </nz-card>
+
+                        <nz-card class="tw-text-center theme-bg-primary theme-border-primary">
+                            <nz-statistic nzTitle="Total Downloads" [nzValue]="getTotalDownloads()"
+                                [nzValueStyle]="{ color: themeService.isCustom() ? 'var(--theme-accent)' : '#fa541c' }">
+                            </nz-statistic>
+                        </nz-card>
+
+                        <nz-card class="tw-text-center theme-bg-primary theme-border-primary">
+                            <nz-statistic nzTitle="Avg Rating" [nzValue]="getAverageRating()"
+                                [nzValueStyle]="{ color: themeService.isCustom() ? 'var(--theme-info)' : '#722ed1' }">
+                            </nz-statistic>
+                        </nz-card>
+                    </div>
+
+                    <!-- Component Usage Table -->
+                    <nz-card nzTitle="Component Usage Details" class="theme-bg-primary theme-border-primary">
+                        <nz-table [nzData]="webComponents" [nzSize]="'small'">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Uses</th>
+                                    <th>Last Used</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let component of webComponents">
+                                    <td>{{ component.name }}</td>
+                                    <td>
+                                        <nz-tag [nzColor]="getComponentTypeColor(component.type)">
+                                            {{ component.type }}
+                                        </nz-tag>
+                                    </td>
+                                    <td>
+                                        <nz-tag [nzColor]="getStatusColor(component.status)">
+                                            {{ component.status }}
+                                        </nz-tag>
+                                    </td>
+                                    <td>{{ component.usageCount || 0 }}</td>
+                                    <td>{{ component.lastUsed | date:'short' }}</td>
+                                    <td>
+                                        <nz-progress [nzPercent]="component.performance || 85" [nzSize]="'small'"
+                                            [nzStrokeColor]="getPerformanceColor(component.performance)">
+                                        </nz-progress>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                    </nz-card>
+                </div>
+            </nz-tab>
+        </nz-tabset>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && webComponents.length === 0"
+        class="tw-text-center tw-py-12 theme-bg-secondary tw-rounded-lg">
+        <i nz-icon nzType="component" class="tw-text-4xl theme-text-tertiary tw-mb-4"></i>
+        <h4 class="tw-text-lg tw-font-medium theme-text-primary tw-mb-2">
+            No Web Components Registered
+        </h4>
+        <p class="tw-text-sm theme-text-secondary tw-mb-4">
+            Register your first web component to get started.
+        </p>
+        <button nz-button nzType="primary" (click)="registerNewComponent()">
+            <i nz-icon nzType="plus"></i>
+            Register Component
+        </button>
+    </div>
+</div>
+
+<!-- Component Preview Modal -->
+<nz-modal [(nzVisible)]="showPreviewModal" [nzTitle]="'Component Preview: ' + (previewingComponent?.name || '')"
+    [nzFooter]="null" nzWidth="800px" (nzOnCancel)="closePreview()">
+
+    <div *nzModalContent class="tw-space-y-4">
+        <div *ngIf="previewingComponent" class="tw-border tw-rounded tw-p-4 theme-border-primary theme-bg-secondary">
+            <div class="tw-text-center tw-py-8">
+                <i nz-icon nzType="eye" class="tw-text-2xl theme-text-secondary tw-mb-2"></i>
+                <div class="tw-text-sm theme-text-secondary">
+                    Component preview would render here
+                </div>
+                <div class="tw-text-xs theme-text-tertiary tw-mt-2">
+                    {{ previewingComponent.name }} - {{ previewingComponent.type }}
+                </div>
+            </div>
+        </div>
+    </div>
+</nz-modal>

@@ -1,0 +1,536 @@
+<div class="tw-space-y-6">
+    <!-- Model View Header -->
+    <div class="tw-flex tw-items-center tw-justify-between">
+        <div>
+            <h4 class="tw-text-lg tw-font-semibold theme-text-primary">
+                Dynamic Model Forms
+            </h4>
+            <p class="tw-text-sm theme-text-secondary tw-mt-1">
+                Create and manage dynamic forms with validation
+            </p>
+        </div>
+
+        <div class="tw-flex tw-gap-2">
+            <button nz-button nzType="primary" nzSize="small" (click)="createNewModel()" class="theme-transition">
+                <i nz-icon nzType="plus"></i>
+                New Model
+            </button>
+
+            <button nz-button nzType="default" nzSize="small" (click)="importModel()" class="theme-transition">
+                <i nz-icon nzType="upload"></i>
+                Import
+            </button>
+
+            <button nz-button nzType="default" nzSize="small" (click)="exportModels()" class="theme-transition">
+                <i nz-icon nzType="download"></i>
+                Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="tw-text-center tw-py-12">
+        <nz-spin nzTip="Loading models..." nzSize="large"></nz-spin>
+    </div>
+
+    <!-- Model Management -->
+    <div *ngIf="!isLoading">
+
+        <nz-tabset nzType="card" [nzTabPosition]="'top'">
+
+            <!-- Form Builder -->
+            <nz-tab nzTitle="Form Builder">
+                <div class="tw-p-4">
+
+                    <div class="tw-grid tw-grid-cols-12 tw-gap-6">
+                        <!-- Form Designer -->
+                        <div class="tw-col-span-8">
+                            <nz-card nzTitle="Form Designer" [nzExtra]="designerExtra"
+                                class="tw-h-[600px] theme-bg-primary theme-border-primary">
+
+                                <!-- Form Preview -->
+                                <div class="tw-h-full tw-overflow-auto">
+                                    <form [formGroup]="dynamicForm" class="tw-space-y-4">
+                                        <formly-form [form]="dynamicForm" [fields]="formFields" [model]="formModel"
+                                            [options]="formOptions">
+                                        </formly-form>
+
+                                        <!-- Form Actions -->
+                                        <div class="tw-flex tw-gap-2 tw-pt-4 tw-border-t theme-border-primary">
+                                            <button nz-button nzType="primary" [disabled]="!dynamicForm.valid"
+                                                (click)="submitForm()">
+                                                <i nz-icon nzType="check"></i>
+                                                Submit Form
+                                            </button>
+                                            <button nz-button nzType="default" (click)="resetForm()">
+                                                <i nz-icon nzType="undo"></i>
+                                                Reset
+                                            </button>
+                                            <button nz-button nzType="default" (click)="validateForm()">
+                                                <i nz-icon nzType="check-circle"></i>
+                                                Validate
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <ng-template #designerExtra>
+                                    <div class="tw-flex tw-gap-1">
+                                        <button nz-button nzType="text" nzSize="small" (click)="previewForm()"
+                                            nz-tooltip="Preview Form">
+                                            <i nz-icon nzType="eye"></i>
+                                        </button>
+                                        <button nz-button nzType="text" nzSize="small" (click)="saveForm()"
+                                            nz-tooltip="Save Form">
+                                            <i nz-icon nzType="save"></i>
+                                        </button>
+                                        <button nz-button nzType="text" nzSize="small" (click)="clearForm()"
+                                            nz-tooltip="Clear Form">
+                                            <i nz-icon nzType="clear"></i>
+                                        </button>
+                                    </div>
+                                </ng-template>
+                            </nz-card>
+                        </div>
+
+                        <!-- Field Library -->
+                        <div class="tw-col-span-4">
+                            <nz-card nzTitle="Field Library" class="tw-h-[600px] theme-bg-primary theme-border-primary">
+
+                                <nz-tabset nzSize="small" nzType="line">
+                                    <nz-tab nzTitle="Basic Fields">
+                                        <div class="tw-space-y-2 tw-p-2">
+                                            <div *ngFor="let field of basicFieldTypes" class="tw-p-3 tw-border tw-rounded tw-cursor-pointer theme-bg-secondary theme-border-primary
+                                   hover:theme-bg-tertiary tw-transition-colors tw-duration-200"
+                                                (click)="addField(field)">
+
+                                                <div class="tw-flex tw-items-center tw-gap-2">
+                                                    <i nz-icon [nzType]="field.icon"
+                                                        class="tw-text-sm theme-text-secondary"></i>
+                                                    <span class="tw-text-sm tw-font-medium theme-text-primary">{{
+                                                        field.name }}</span>
+                                                </div>
+                                                <div class="tw-text-xs theme-text-tertiary tw-mt-1">{{ field.description
+                                                    }}</div>
+                                            </div>
+                                        </div>
+                                    </nz-tab>
+
+                                    <nz-tab nzTitle="Advanced">
+                                        <div class="tw-space-y-2 tw-p-2">
+                                            <div *ngFor="let field of advancedFieldTypes" class="tw-p-3 tw-border tw-rounded tw-cursor-pointer theme-bg-secondary theme-border-primary
+                                   hover:theme-bg-tertiary tw-transition-colors tw-duration-200"
+                                                (click)="addField(field)">
+
+                                                <div class="tw-flex tw-items-center tw-gap-2">
+                                                    <i nz-icon [nzType]="field.icon"
+                                                        class="tw-text-sm theme-text-secondary"></i>
+                                                    <span class="tw-text-sm tw-font-medium theme-text-primary">{{
+                                                        field.name }}</span>
+                                                </div>
+                                                <div class="tw-text-xs theme-text-tertiary tw-mt-1">{{ field.description
+                                                    }}</div>
+                                            </div>
+                                        </div>
+                                    </nz-tab>
+
+                                    <nz-tab nzTitle="Layout">
+                                        <div class="tw-space-y-2 tw-p-2">
+                                            <div *ngFor="let layout of layoutFieldTypes" class="tw-p-3 tw-border tw-rounded tw-cursor-pointer theme-bg-secondary theme-border-primary
+                                   hover:theme-bg-tertiary tw-transition-colors tw-duration-200"
+                                                (click)="addField(layout)">
+
+                                                <div class="tw-flex tw-items-center tw-gap-2">
+                                                    <i nz-icon [nzType]="layout.icon"
+                                                        class="tw-text-sm theme-text-secondary"></i>
+                                                    <span class="tw-text-sm tw-font-medium theme-text-primary">{{
+                                                        layout.name }}</span>
+                                                </div>
+                                                <div class="tw-text-xs theme-text-tertiary tw-mt-1">{{
+                                                    layout.description }}</div>
+                                            </div>
+                                        </div>
+                                    </nz-tab>
+                                </nz-tabset>
+                            </nz-card>
+                        </div>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- Field Editor -->
+            <nz-tab nzTitle="Field Editor">
+                <div class="tw-p-4 tw-space-y-6">
+
+                    <!-- Field List -->
+                    <nz-card nzTitle="Form Fields" class="theme-bg-primary theme-border-primary">
+                        <nz-table [nzData]="formFields" [nzSize]="'small'" [nzPageSize]="10">
+                            <thead>
+                                <tr>
+                                    <th nzWidth="40px">#</th>
+                                    <th>Field Key</th>
+                                    <th>Type</th>
+                                    <th>Label</th>
+                                    <th>Required</th>
+                                    <th>Validation</th>
+                                    <th nzWidth="120px">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let field of formFields; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>
+                                        <code
+                                            class="tw-text-xs tw-bg-gray-100 tw-px-1 tw-rounded theme-bg-tertiary theme-text-primary">
+                          {{ field.key }}
+                        </code>
+                                    </td>
+                                    <td>
+                                        <nz-tag [nzColor]="getFieldTypeColor(field.props?.type || 'text')">
+                                            {{ field.type }}
+                                        </nz-tag>
+                                    </td>
+                                    <td>{{ field.templateOptions?.label || field.key }}</td>
+                                    <td>
+                                        <i nz-icon
+                                            [nzType]="field.templateOptions?.required ? 'check-circle' : 'close-circle'"
+                                            [style.color]="field.templateOptions?.required ? '#52c41a' : '#d9d9d9'">
+                                        </i>
+                                    </td>
+                                    <td>
+                                        <nz-tag *ngIf="field.validators" nzColor="blue" class="tw-text-xs">
+                                            {{ getValidatorCount(field.validators) }} rules
+                                        </nz-tag>
+                                        <span *ngIf="!field.validators"
+                                            class="tw-text-xs theme-text-tertiary">None</span>
+                                    </td>
+                                    <td>
+                                        <nz-button-group nzSize="small">
+                                            <button nz-button nzType="default" (click)="editField(field, i)">
+                                                <i nz-icon nzType="edit"></i>
+                                            </button>
+                                            <button nz-button nzType="default" (click)="duplicateField(field, i)">
+                                                <i nz-icon nzType="copy"></i>
+                                            </button>
+                                            <button nz-button nzDanger (click)="removeField(i)">
+                                                <i nz-icon nzType="delete"></i>
+                                            </button>
+                                        </nz-button-group>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                    </nz-card>
+                </div>
+            </nz-tab>
+
+            <!-- Form Templates -->
+            <nz-tab nzTitle="Templates">
+                <div class="tw-p-4 tw-space-y-6">
+
+                    <!-- Template Gallery -->
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
+                        <nz-card *ngFor="let template of formTemplates" [nzTitle]="template.name"
+                            [nzExtra]="templateExtra"
+                            class="theme-bg-primary theme-border-primary theme-shadow-sm hover:theme-shadow-md tw-transition-all tw-duration-200">
+
+                            <div class="tw-space-y-3">
+                                <!-- Template Info -->
+                                <div class="tw-flex tw-items-center tw-justify-between">
+                                    <nz-tag [nzColor]="template.category === 'system' ? 'blue' : 'green'">
+                                        {{ template.category }}
+                                    </nz-tag>
+                                    <div class="tw-text-xs theme-text-tertiary">
+                                        {{ template.fields?.length || 0 }} fields
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="tw-text-sm theme-text-secondary">
+                                    {{ template.description }}
+                                </div>
+
+                                <!-- Usage Stats -->
+                                <div class="tw-grid tw-grid-cols-2 tw-gap-2 tw-text-xs">
+                                    <div class="tw-text-center tw-p-2 tw-rounded theme-bg-tertiary">
+                                        <div class="tw-font-semibold theme-text-primary">{{ template.usageCount || 0 }}
+                                        </div>
+                                        <div class="theme-text-secondary">Uses</div>
+                                    </div>
+                                    <div class="tw-text-center tw-p-2 tw-rounded theme-bg-tertiary">
+                                        <div class="tw-font-semibold theme-text-primary">{{ template.rating || 0 }}/5
+                                        </div>
+                                        <div class="theme-text-secondary">Rating</div>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="tw-flex tw-gap-2 tw-pt-3 tw-border-t theme-border-secondary">
+                                    <button nz-button nzSize="small" nzType="primary" (click)="loadTemplate(template)"
+                                        class="tw-flex-1">
+                                        <i nz-icon nzType="download"></i>
+                                        Load
+                                    </button>
+                                    <button nz-button nzSize="small" nzType="default"
+                                        (click)="previewTemplate(template)">
+                                        <i nz-icon nzType="eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <ng-template #templateExtra>
+                                <button nz-button nzType="text" nzSize="small" (click)="favoriteTemplate(template)"
+                                    [style.color]="template.isFavorite ? '#faad14' : ''">
+                                    <i nz-icon [nzType]="template.isFavorite ? 'star' : 'star'"></i>
+                                </button>
+                            </ng-template>
+                        </nz-card>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- Data Management -->
+            <nz-tab nzTitle="Data">
+                <div class="tw-p-4 tw-space-y-6">
+
+                    <!-- Data Overview -->
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-4 tw-gap-4">
+                        <nz-card class="tw-text-center theme-bg-primary theme-border-primary">
+                            <nz-statistic nzTitle="Total Forms" [nzValue]="getCategoryTypeCount()"
+                                [nzValueStyle]="{ color: themeService.isCustom() ? 'var(--theme-primary)' : '#1890ff' }">
+                            </nz-statistic>
+                        </nz-card>
+
+                        <nz-card class="tw-text-center theme-bg-primary theme-border-primary">
+                            <nz-statistic nzTitle="Form Fields" [nzValue]="formFields.length"
+                                [nzValueStyle]="{ color: themeService.isCustom() ? 'var(--theme-success)' : '#52c41a' }">
+                            </nz-statistic>
+                        </nz-card>
+
+                        <nz-card class="tw-text-center theme-bg-primary theme-border-primary">
+                            <nz-statistic nzTitle="Submissions" [nzValue]="getSubmissionCount()"
+                                [nzValueStyle]="{ color: themeService.isCustom() ? 'var(--theme-accent)' : '#fa541c' }">
+                            </nz-statistic>
+                        </nz-card>
+
+                        <nz-card class="tw-text-center theme-bg-primary theme-border-primary">
+                            <nz-statistic nzTitle="Success Rate" [nzValue]="getSuccessRate()" nzSuffix="%"
+                                [nzValueStyle]="{ color: themeService.isCustom() ? 'var(--theme-info)' : '#722ed1' }">
+                            </nz-statistic>
+                        </nz-card>
+                    </div>
+
+                    <!-- Form Data Table -->
+                    <nz-card nzTitle="Form Submissions" class="theme-bg-primary theme-border-primary">
+                        <nz-table [nzData]="formSubmissions" [nzSize]="'small'" [nzPageSize]="10">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Form</th>
+                                    <th>Submitted By</th>
+                                    <th>Submitted At</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let submission of formSubmissions">
+                                    <td>{{ submission.id }}</td>
+                                    <td>{{ submission.formName }}</td>
+                                    <td>{{ submission.submittedBy }}</td>
+                                    <td>{{ submission.submittedAt | date:'short' }}</td>
+                                    <td>
+                                        <nz-tag [nzColor]="getSubmissionStatusColor(submission.status)">
+                                            {{ submission.status }}
+                                        </nz-tag>
+                                    </td>
+                                    <td>
+                                        <nz-button-group nzSize="small">
+                                            <button nz-button nzType="default" (click)="viewSubmission(submission)">
+                                                <i nz-icon nzType="eye"></i>
+                                            </button>
+                                            <button nz-button nzType="default" (click)="exportSubmission(submission)">
+                                                <i nz-icon nzType="download"></i>
+                                            </button>
+                                        </nz-button-group>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                    </nz-card>
+                </div>
+            </nz-tab>
+
+            <!-- Settings -->
+            <nz-tab nzTitle="Settings">
+                <div class="tw-p-4 tw-space-y-6">
+
+                    <!-- Form Settings -->
+                    <nz-card nzTitle="Form Configuration" class="theme-bg-primary theme-border-primary">
+                        <div class="tw-space-y-4">
+
+                            <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+                                <div>
+                                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                        Form Title
+                                    </label>
+                                    <input nz-input [(ngModel)]="formSettings.title" placeholder="Enter form title"
+                                        class="tw-w-full">
+                                </div>
+
+                                <div>
+                                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                        Form Description
+                                    </label>
+                                    <input nz-input [(ngModel)]="formSettings.description"
+                                        placeholder="Enter form description" class="tw-w-full">
+                                </div>
+                            </div>
+
+                            <nz-divider nzText="Validation Settings"></nz-divider>
+
+                            <div class="tw-space-y-3">
+                                <label nz-checkbox [(ngModel)]="formSettings.enableRealTimeValidation">
+                                    Enable Real-time Validation
+                                </label>
+                                <label nz-checkbox [(ngModel)]="formSettings.showValidationSummary">
+                                    Show Validation Summary
+                                </label>
+                                <label nz-checkbox [(ngModel)]="formSettings.enableProgressIndicator">
+                                    Enable Progress Indicator
+                                </label>
+                                <label nz-checkbox [(ngModel)]="formSettings.enableAutoSave">
+                                    Enable Auto-save
+                                </label>
+                            </div>
+
+                            <nz-divider nzText="Submission Settings"></nz-divider>
+
+                            <div class="tw-space-y-3">
+                                <label nz-checkbox [(ngModel)]="formSettings.enableMultipleSubmissions">
+                                    Allow Multiple Submissions
+                                </label>
+                                <label nz-checkbox [(ngModel)]="formSettings.enableDraftSaving">
+                                    Enable Draft Saving
+                                </label>
+                                <label nz-checkbox [(ngModel)]="formSettings.enableEmailNotifications">
+                                    Send Email Notifications
+                                </label>
+                            </div>
+
+                            <div class="tw-flex tw-justify-end tw-pt-4 tw-border-t theme-border-primary">
+                                <div class="tw-flex tw-gap-2">
+                                    <button nz-button nzType="default" (click)="resetSettings()">
+                                        Reset Settings
+                                    </button>
+                                    <button nz-button nzType="primary" (click)="saveSettings()">
+                                        <i nz-icon nzType="save"></i>
+                                        Save Settings
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </nz-card>
+                </div>
+            </nz-tab>
+        </nz-tabset>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && formFields.length === 0" class="tw-text-center tw-py-12 theme-bg-secondary tw-rounded-lg">
+        <i nz-icon nzType="form" class="tw-text-4xl theme-text-tertiary tw-mb-4"></i>
+        <h4 class="tw-text-lg tw-font-medium theme-text-primary tw-mb-2">
+            No Form Fields Created
+        </h4>
+        <p class="tw-text-sm theme-text-secondary tw-mb-4">
+            Start building your form by adding fields from the library.
+        </p>
+        <button nz-button nzType="primary" (click)="addBasicField()">
+            <i nz-icon nzType="plus"></i>
+            Add First Field
+        </button>
+    </div>
+</div>
+
+<!-- Field Editor Modal -->
+<nz-modal [(nzVisible)]="showFieldEditor" nzTitle="Field Editor" [nzFooter]="null" nzWidth="600px"
+    (nzOnCancel)="closeFieldEditor()">
+
+    <div *nzModalContent class="tw-space-y-4">
+        <div *ngIf="editingField" class="tw-space-y-4">
+
+            <!-- Basic Properties -->
+            <div class="tw-space-y-3">
+                <div>
+                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                        Field Key
+                    </label>
+                    <input nz-input [(ngModel)]="editingField.key" class="tw-w-full">
+                </div>
+
+                <div>
+                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                        Field Type
+                    </label>
+                    <nz-select [(ngModel)]="editingField.type" class="tw-w-full">
+                        <nz-option value="input" nzLabel="Text Input"></nz-option>
+                        <nz-option value="textarea" nzLabel="Textarea"></nz-option>
+                        <nz-option value="select" nzLabel="Select"></nz-option>
+                        <nz-option value="checkbox" nzLabel="Checkbox"></nz-option>
+                        <nz-option value="radio" nzLabel="Radio"></nz-option>
+                        <nz-option value="datepicker" nzLabel="Date Picker"></nz-option>
+                    </nz-select>
+                </div>
+
+                <div>
+                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                        Label
+                    </label>
+                    <input nz-input [(ngModel)]="editingField.templateOptions.label" class="tw-w-full">
+                </div>
+
+                <div>
+                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                        Placeholder
+                    </label>
+                    <input nz-input [(ngModel)]="editingField.templateOptions.placeholder" class="tw-w-full">
+                </div>
+            </div>
+
+            <!-- Validation -->
+            <nz-divider nzText="Validation Rules"></nz-divider>
+
+            <div class="tw-space-y-3">
+                <label nz-checkbox [(ngModel)]="editingField.templateOptions.required">
+                    Required Field
+                </label>
+
+                <div *ngIf="editingField.type === 'input'">
+                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                        Min Length
+                    </label>
+                    <nz-input-number [(ngModel)]="editingField.templateOptions.minLength" [nzMin]="0" class="tw-w-full">
+                    </nz-input-number>
+                </div>
+
+                <div *ngIf="editingField.type === 'input'">
+                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                        Max Length
+                    </label>
+                    <nz-input-number [(ngModel)]="editingField.templateOptions.maxLength" [nzMin]="0" class="tw-w-full">
+                    </nz-input-number>
+                </div>
+            </div>
+        </div>
+
+        <div class="tw-flex tw-justify-end tw-gap-2 tw-pt-4 tw-border-t theme-border-primary">
+            <button nz-button nzType="default" (click)="closeFieldEditor()">
+                Cancel
+            </button>
+            <button nz-button nzType="primary" (click)="saveField()">
+                <i nz-icon nzType="save"></i>
+                Save Field
+            </button>
+        </div>
+    </div>
+</nz-modal>

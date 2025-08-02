@@ -1,0 +1,124 @@
+<div class="tw-space-y-4">
+    <!-- Grid Header -->
+    <div class="tw-flex tw-items-center tw-justify-between tw-mb-6">
+        <div>
+            <h4 class="tw-text-lg tw-font-semibold theme-text-primary">
+                Grid View
+            </h4>
+            <p class="tw-text-sm theme-text-secondary tw-mt-1">
+                {{ cardViewData.length }} items found
+            </p>
+        </div>
+
+        <div class="tw-flex tw-gap-2">
+            <button nz-button nzType="default" nzSize="small" (click)="refreshData()" class="theme-transition">
+                <i nz-icon nzType="reload"></i>
+                Refresh
+            </button>
+
+            <nz-button-group>
+                <button nz-button [nzType]="viewMode === 'grid' ? 'primary' : 'default'" nzSize="small"
+                    (click)="setViewMode('grid')">
+                    <i nz-icon nzType="appstore"></i>
+                </button>
+                <button nz-button [nzType]="viewMode === 'list' ? 'primary' : 'default'" nzSize="small"
+                    (click)="setViewMode('list')">
+                    <i nz-icon nzType="bars"></i>
+                </button>
+            </nz-button-group>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="tw-flex tw-items-center tw-justify-center tw-py-12">
+        <nz-spin nzTip="Loading grid data..." nzSize="large"></nz-spin>
+    </div>
+
+    <!-- Grid Content -->
+    <div *ngIf="!isLoading" [ngClass]="getGridClasses()">
+        <nz-card *ngFor="let item of cardViewData; let i = index"
+            [nzTitle]="item.title || item.name || 'Card ' + (i + 1)" [nzExtra]="cardExtra" class="tw-group tw-transition-all tw-duration-300 
+                 tw-border theme-border-primary theme-bg-primary
+                 hover:theme-shadow-md hover:tw-scale-[1.02]
+                 theme-transition">
+
+            <!-- Card Content -->
+            <div class="tw-space-y-3">
+                <!-- Item Description -->
+                <div *ngIf="item.description" class="tw-text-sm theme-text-secondary tw-leading-relaxed">
+                    {{ item.description }}
+                </div>
+
+                <!-- Category Info -->
+                <div *ngIf="item.childCategory" class="tw-flex tw-items-center tw-gap-2">
+                    <nz-tag [nzColor]="getCategoryColor(item.childCategory)">
+                        {{ item.childCategory.name || 'Unknown Category' }}
+                    </nz-tag>
+                </div>
+
+                <!-- Status Badge -->
+                <div *ngIf="item.status" class="tw-flex tw-items-center tw-gap-2">
+                    <nz-tag [nzColor]="getStatusColor(item.status)">
+                        <i nz-icon [nzType]="getStatusIcon(item.status)" class="tw-mr-1"></i>
+                        {{ item.status }}
+                    </nz-tag>
+                </div>
+
+                <!-- Template Nodes -->
+                <div *ngIf="templateNode && templateNode.length > 0"
+                    class="tw-border theme-border-secondary tw-rounded-lg tw-p-3 theme-bg-secondary">
+                    <div class="tw-text-xs tw-font-medium theme-text-secondary tw-mb-2">
+                        Template Nodes ({{ templateNode.length }})
+                    </div>
+                    <div class="tw-space-y-1">
+                        <div *ngFor="let node of templateNode.slice(0, 3)"
+                            class="tw-text-xs theme-text-tertiary tw-p-1 tw-rounded theme-bg-tertiary"
+                            [innerHTML]="renderNode(node)">
+                        </div>
+                        <div *ngIf="templateNode.length > 3" class="tw-text-xs theme-text-tertiary tw-text-center">
+                            +{{ templateNode.length - 3 }} more nodes
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Properties -->
+                <div *ngIf="item.customProperties" class="tw-grid tw-grid-cols-2 tw-gap-2 tw-text-xs">
+                    <div *ngFor="let prop of getCustomProperties(item.customProperties)"
+                        class="tw-flex tw-justify-between">
+                        <span class="theme-text-secondary">{{ prop.key }}:</span>
+                        <span class="theme-text-primary tw-font-medium">{{ prop.value }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Actions Template -->
+            <ng-template #cardExtra>
+                <nz-button-group size="small">
+                    <button nz-button nzType="text" nz-tooltip="View Details" (click)="viewItem(item, i)"
+                        class="theme-transition hover:theme-text-primary">
+                        <i nz-icon nzType="eye"></i>
+                    </button>
+                    <button nz-button nzType="text" nz-tooltip="Edit Item" (click)="editItem(item, i)"
+                        class="theme-transition hover:tw-text-blue-500">
+                        <i nz-icon nzType="edit"></i>
+                    </button>
+                    <button nz-button nzType="text" nz-tooltip="Delete Item" (click)="deleteItem(item, i)"
+                        class="theme-transition hover:tw-text-red-500">
+                        <i nz-icon nzType="delete"></i>
+                    </button>
+                </nz-button-group>
+            </ng-template>
+        </nz-card>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && cardViewData.length === 0"
+        class="tw-py-12 tw-text-center theme-bg-secondary tw-rounded-lg">
+        <nz-empty nzNotFoundContent="No items to display" [nzNotFoundImage]="'simple'">
+            <button nz-button nzType="primary" (click)="createNewItem()">
+                <i nz-icon nzType="plus"></i>
+                Create New Item
+            </button>
+        </nz-empty>
+    </div>
+</div>

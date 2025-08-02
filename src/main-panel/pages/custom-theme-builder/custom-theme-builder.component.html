@@ -1,0 +1,231 @@
+<nz-modal [(nzVisible)]="isVisible" [nzTitle]="'Custom Theme Builder'" [nzWidth]="800" [nzFooter]="null"
+    (nzOnCancel)="onCancel()">
+
+    <div *nzModalContent class="tw-space-y-6">
+
+        <!-- Theme Name -->
+        <div class="tw-space-y-2">
+            <label class="tw-text-sm tw-font-medium theme-text-primary">
+                Theme Name
+            </label>
+            <input nz-input [(ngModel)]="customTheme.name" placeholder="Enter theme name" class="tw-w-full">
+        </div>
+
+        <!-- Color Configuration Tabs -->
+        <nz-tabset nzType="card">
+
+            <!-- Primary Colors -->
+            <nz-tab nzTitle="Primary Colors">
+                <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-p-4">
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Primary Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.primary"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.primary" placeholder="#1890ff" class="tw-flex-1">
+                        </div>
+                    </div>
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Secondary Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.secondary"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.secondary" placeholder="#722ed1" class="tw-flex-1">
+                        </div>
+                    </div>
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Accent Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.accent"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.accent" placeholder="#fa541c" class="tw-flex-1">
+                        </div>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- Background Colors -->
+            <nz-tab nzTitle="Backgrounds">
+                <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-p-4">
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Background Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.background"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.background" placeholder="#ffffff"
+                                class="tw-flex-1">
+                        </div>
+                    </div>
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Surface Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.surface"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.surface" placeholder="#f5f5f5" class="tw-flex-1">
+                        </div>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- Text Colors -->
+            <nz-tab nzTitle="Text & Borders">
+                <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-p-4">
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Primary Text
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.text"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.text" placeholder="#000000" class="tw-flex-1">
+                        </div>
+                    </div>
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Secondary Text
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.textSecondary"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.textSecondary" placeholder="#666666"
+                                class="tw-flex-1">
+                        </div>
+                    </div>
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Border Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.border"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.border" placeholder="#d9d9d9" class="tw-flex-1">
+                        </div>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- Status Colors -->
+            <nz-tab nzTitle="Status Colors">
+                <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-p-4">
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Success Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.success"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.success" placeholder="#52c41a" class="tw-flex-1">
+                        </div>
+                    </div>
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Warning Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.warning"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.warning" placeholder="#faad14" class="tw-flex-1">
+                        </div>
+                    </div>
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Error Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.error"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.error" placeholder="#ff4d4f" class="tw-flex-1">
+                        </div>
+                    </div>
+
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Info Color
+                        </label>
+                        <div class="tw-flex tw-gap-2">
+                            <input type="color" [(ngModel)]="customTheme.info"
+                                class="tw-w-12 tw-h-10 tw-rounded tw-border theme-border-primary">
+                            <input nz-input [(ngModel)]="customTheme.info" placeholder="#1890ff" class="tw-flex-1">
+                        </div>
+                    </div>
+                </div>
+            </nz-tab>
+        </nz-tabset>
+
+        <!-- Preview -->
+        <div class="tw-space-y-2">
+            <label class="tw-text-sm tw-font-medium theme-text-primary">
+                Preview
+            </label>
+            <div class="tw-p-4 tw-rounded-lg tw-border" [style.background]="customTheme.background"
+                [style.border-color]="customTheme.border">
+
+                <div class="tw-space-y-3">
+                    <h4 [style.color]="customTheme.text" class="tw-font-semibold">
+                        Sample Theme Preview
+                    </h4>
+                    <p [style.color]="customTheme.textSecondary" class="tw-text-sm">
+                        This is how your custom theme will look like.
+                    </p>
+
+                    <div class="tw-flex tw-gap-2">
+                        <div class="tw-px-3 tw-py-1 tw-rounded tw-text-xs tw-font-medium"
+                            [style.background]="customTheme.primary" [style.color]="customTheme.surface">
+                            Primary
+                        </div>
+                        <div class="tw-px-3 tw-py-1 tw-rounded tw-text-xs tw-font-medium"
+                            [style.background]="customTheme.success" [style.color]="customTheme.surface">
+                            Success
+                        </div>
+                        <div class="tw-px-3 tw-py-1 tw-rounded tw-text-xs tw-font-medium"
+                            [style.background]="customTheme.warning" [style.color]="customTheme.surface">
+                            Warning
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="tw-flex tw-justify-between tw-pt-4 tw-border-t theme-border-primary">
+            <div class="tw-flex tw-gap-2">
+                <nz-select nzPlaceHolder="Load preset theme" class="tw-w-48" (ngModelChange)="loadPresetTheme($event)">
+                    <nz-option *ngFor="let preset of themeService.predefinedThemes" [nzValue]="preset.name"
+                        [nzLabel]="preset.name">
+                    </nz-option>
+                </nz-select>
+            </div>
+
+            <div class="tw-flex tw-gap-2">
+                <button nz-button nzType="default" (click)="onCancel()">
+                    Cancel
+                </button>
+                <button nz-button nzType="primary" (click)="saveTheme()">
+                    <i nz-icon nzType="save"></i>
+                    Save Theme
+                </button>
+            </div>
+        </div>
+    </div>
+</nz-modal>

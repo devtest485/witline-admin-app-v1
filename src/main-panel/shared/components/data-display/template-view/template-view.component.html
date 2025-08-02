@@ -1,0 +1,426 @@
+<div class="tw-space-y-6">
+    <!-- Template Header -->
+    <div class="tw-flex tw-items-center tw-justify-between">
+        <div>
+            <h4 class="tw-text-lg tw-font-semibold theme-text-primary">
+                Template Manager
+            </h4>
+            <p class="tw-text-sm theme-text-secondary tw-mt-1">
+                Create and manage dynamic templates with theme support
+            </p>
+        </div>
+
+        <div class="tw-flex tw-gap-2">
+            <nz-select [(ngModel)]="selectedTemplate" (ngModelChange)="onTemplateChange()" class="tw-w-48"
+                nzPlaceHolder="Select Template">
+                <nz-option *ngFor="let template of availableTemplates" [nzValue]="template.id"
+                    [nzLabel]="template.name">
+                    <div class="tw-flex tw-items-center tw-justify-between">
+                        <span>{{ template.name }}</span>
+                        <nz-tag [nzColor]="template.category === 'system' ? 'blue' : 'green'" class="tw-text-xs">
+                            {{ template.category }}
+                        </nz-tag>
+                    </div>
+                </nz-option>
+            </nz-select>
+
+            <button nz-button nzType="primary" nzSize="small" (click)="createNewTemplate()" class="theme-transition">
+                <i nz-icon nzType="plus"></i>
+                New Template
+            </button>
+
+            <button nz-button nzType="default" nzSize="small" (click)="refreshTemplates()" class="theme-transition">
+                <i nz-icon nzType="reload"></i>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="tw-text-center tw-py-12">
+        <nz-spin nzTip="Loading templates..." nzSize="large"></nz-spin>
+    </div>
+
+    <!-- Template Content -->
+    <div *ngIf="!isLoading" class="tw-space-y-6">
+
+        <!-- Template Info Card -->
+        <nz-card *ngIf="currentTemplate" class="theme-bg-primary theme-border-primary theme-shadow-sm">
+
+            <div class="tw-flex tw-items-start tw-justify-between">
+                <div class="tw-flex-1">
+                    <div class="tw-flex tw-items-center tw-gap-3 tw-mb-3">
+                        <h5 class="tw-text-lg tw-font-medium theme-text-primary tw-mb-0">
+                            {{ currentTemplate.name }}
+                        </h5>
+                        <nz-tag [nzColor]="getTemplateStatusColor(currentTemplate.status)">
+                            {{ currentTemplate.status }}
+                        </nz-tag>
+                        <nz-tag [nzColor]="currentTemplate.category === 'system' ? 'blue' : 'green'">
+                            {{ currentTemplate.category }}
+                        </nz-tag>
+                    </div>
+
+                    <p class="tw-text-sm theme-text-secondary tw-mb-3">
+                        {{ currentTemplate.description }}
+                    </p>
+
+                    <div class="tw-flex tw-items-center tw-gap-4 tw-text-xs theme-text-tertiary">
+                        <span>Version: {{ currentTemplate.version }}</span>
+                        <span>Created: {{ currentTemplate.createdAt | date:'short' }}</span>
+                        <span>Modified: {{ currentTemplate.modifiedAt | date:'short' }}</span>
+                        <span>Uses: {{ currentTemplate.usageCount || 0 }}</span>
+                    </div>
+                </div>
+
+                <div class="tw-flex tw-gap-2">
+                    <button nz-button nzType="default" nzSize="small" (click)="duplicateTemplate(currentTemplate)"
+                        nz-tooltip="Duplicate Template">
+                        <i nz-icon nzType="copy"></i>
+                    </button>
+                    <button nz-button nzType="default" nzSize="small" (click)="exportTemplate(currentTemplate)"
+                        nz-tooltip="Export Template">
+                        <i nz-icon nzType="download"></i>
+                    </button>
+                    <button nz-button nzType="default" nzSize="small" (click)="editTemplate(currentTemplate)"
+                        nz-tooltip="Edit Template">
+                        <i nz-icon nzType="edit"></i>
+                    </button>
+                </div>
+            </div>
+        </nz-card>
+
+        <!-- Template Editor/Viewer -->
+        <nz-tabset nzType="card" [nzTabPosition]="'top'" class="theme-bg-primary">
+
+            <!-- Preview Tab -->
+            <nz-tab nzTitle="Preview">
+                <div class="tw-p-6">
+                    <div class="tw-mb-4 tw-flex tw-items-center tw-justify-between">
+                        <h6 class="tw-font-medium theme-text-primary">Template Preview</h6>
+                        <div class="tw-flex tw-gap-2">
+                            <button nz-button nzSize="small" nzType="default" (click)="toggleResponsivePreview()"
+                                class="theme-transition">
+                                <i nz-icon [nzType]="responsivePreview ? 'mobile' : 'desktop'"></i>
+                                {{ responsivePreview ? 'Mobile' : 'Desktop' }}
+                            </button>
+                            <button nz-button nzSize="small" nzType="default" (click)="refreshPreview()"
+                                class="theme-transition">
+                                <i nz-icon nzType="reload"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tw-border tw-rounded-lg tw-overflow-hidden theme-border-primary"
+                        [class]="responsivePreview ? 'tw-max-w-sm tw-mx-auto' : 'tw-w-full'">
+                        <div class="tw-min-h-[400px] tw-p-4 theme-bg-secondary" [innerHTML]="renderedTemplate">
+                        </div>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- Source Code Tab -->
+            <nz-tab nzTitle="Source Code">
+                <div class="tw-p-6 tw-space-y-4">
+
+                    <!-- Template Source -->
+                    <div class="tw-space-y-2">
+                        <div class="tw-flex tw-items-center tw-justify-between">
+                            <label class="tw-text-sm tw-font-medium theme-text-primary">
+                                Template Source
+                            </label>
+                            <div class="tw-flex tw-gap-2">
+                                <button nz-button nzSize="small" nzType="default" (click)="formatTemplateCode()"
+                                    nz-tooltip="Format Code">
+                                    <i nz-icon nzType="code"></i>
+                                </button>
+                                <button nz-button nzSize="small" nzType="default" (click)="validateTemplate()"
+                                    nz-tooltip="Validate Template">
+                                    <i nz-icon nzType="check"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <textarea class="tw-w-full tw-h-64 tw-p-3 tw-border tw-rounded-lg tw-font-mono tw-text-sm
+                         theme-bg-primary theme-border-primary theme-text-primary tw-resize-none
+                         focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500" [(ngModel)]="templateSource"
+                            (ngModelChange)="onTemplateSourceChange()" placeholder="Enter your template code here...">
+                </textarea>
+                    </div>
+
+                    <!-- Template Variables -->
+                    <div class="tw-space-y-2">
+                        <label class="tw-text-sm tw-font-medium theme-text-primary">
+                            Template Variables
+                        </label>
+                        <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-3">
+                            <div *ngFor="let variable of templateVariables"
+                                class="tw-p-3 tw-border tw-rounded theme-bg-secondary theme-border-primary">
+                                <div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
+                                    <span class="tw-font-mono tw-text-xs theme-text-primary">
+                                        {{ variable.name }}
+                                    </span>
+                                    <nz-tag [nzColor]="getVariableTypeColor(variable.type)" class="tw-text-xs">
+                                        {{ variable.type }}
+                                    </nz-tag>
+                                </div>
+                                <div class="tw-text-xs theme-text-secondary">
+                                    {{ variable.description }}
+                                </div>
+                                <div class="tw-text-xs tw-font-mono theme-text-tertiary tw-mt-1">
+                                    Default: {{ variable.defaultValue }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Template Actions -->
+                    <div class="tw-flex tw-justify-between tw-pt-4 tw-border-t theme-border-primary">
+                        <div class="tw-flex tw-gap-2">
+                            <button nz-button nzType="default" nzSize="small" (click)="resetTemplate()">
+                                <i nz-icon nzType="undo"></i>
+                                Reset
+                            </button>
+                            <button nz-button nzType="default" nzSize="small" (click)="saveAsNewTemplate()">
+                                <i nz-icon nzType="save"></i>
+                                Save As New
+                            </button>
+                        </div>
+
+                        <div class="tw-flex tw-gap-2">
+                            <button nz-button nzType="default" nzSize="small" (click)="previewTemplate()">
+                                <i nz-icon nzType="eye"></i>
+                                Preview
+                            </button>
+                            <button nz-button nzType="primary" nzSize="small" (click)="applyTemplate()">
+                                <i nz-icon nzType="check"></i>
+                                Apply Template
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- Data Context Tab -->
+            <nz-tab nzTitle="Data Context">
+                <div class="tw-p-6 tw-space-y-4">
+
+                    <div class="tw-text-sm theme-text-secondary tw-mb-4">
+                        Available data for template variables:
+                    </div>
+
+                    <nz-tabset nzType="line" nzSize="small">
+                        <nz-tab nzTitle="Current Data">
+                            <div class="tw-mt-4">
+                                <pre
+                                    class="tw-bg-gray-100 tw-p-4 tw-rounded-lg tw-text-xs tw-overflow-auto tw-max-h-64
+                               theme-bg-tertiary theme-text-primary tw-border theme-border-primary">{{ getCurrentDataContext() }}</pre>
+                            </div>
+                        </nz-tab>
+
+                        <nz-tab nzTitle="Sample Data">
+                            <div class="tw-mt-4">
+                                <div class="tw-flex tw-items-center tw-justify-between tw-mb-3">
+                                    <span class="tw-text-sm tw-font-medium theme-text-primary">
+                                        Sample Data Sets
+                                    </span>
+                                    <button nz-button nzSize="small" nzType="default" (click)="loadSampleData()">
+                                        <i nz-icon nzType="database"></i>
+                                        Load Sample
+                                    </button>
+                                </div>
+
+                                <div class="tw-space-y-2">
+                                    <div *ngFor="let sample of sampleDataSets" class="tw-p-3 tw-border tw-rounded tw-cursor-pointer theme-bg-secondary theme-border-primary
+                               hover:theme-bg-tertiary tw-transition-colors tw-duration-200"
+                                        (click)="applySampleData(sample)">
+                                        <div class="tw-font-medium tw-text-sm theme-text-primary">{{ sample.name }}
+                                        </div>
+                                        <div class="tw-text-xs theme-text-secondary tw-mt-1">{{ sample.description }}
+                                        </div>
+                                        <div class="tw-text-xs theme-text-tertiary tw-mt-1">{{ sample.recordCount }}
+                                            records</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </nz-tab>
+
+                        <nz-tab nzTitle="Schema">
+                            <div class="tw-mt-4">
+                                <div class="tw-text-sm tw-font-medium theme-text-primary tw-mb-3">
+                                    Data Schema
+                                </div>
+                                <div class="tw-space-y-2">
+                                    <div *ngFor="let field of dataSchema"
+                                        class="tw-p-2 tw-border tw-rounded theme-bg-secondary theme-border-primary">
+                                        <div class="tw-flex tw-items-center tw-justify-between">
+                                            <span class="tw-font-mono tw-text-sm theme-text-primary">{{ field.name
+                                                }}</span>
+                                            <nz-tag [nzColor]="getFieldTypeColor(field.type)" class="tw-text-xs">
+                                                {{ field.type }}
+                                            </nz-tag>
+                                        </div>
+                                        <div class="tw-text-xs theme-text-secondary tw-mt-1">{{ field.description }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </nz-tab>
+                    </nz-tabset>
+                </div>
+            </nz-tab>
+
+            <!-- Settings Tab -->
+            <nz-tab nzTitle="Settings">
+                <div class="tw-p-6 tw-space-y-6">
+
+                    <!-- Template Settings -->
+                    <div class="tw-space-y-4">
+                        <h6 class="tw-font-medium theme-text-primary">Template Settings</h6>
+
+                        <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+                            <div>
+                                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                    Template Name
+                                </label>
+                                <input nz-input [(ngModel)]="templateSettings.name" placeholder="Enter template name"
+                                    class="tw-w-full">
+                            </div>
+
+                            <div>
+                                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                    Category
+                                </label>
+                                <nz-select [(ngModel)]="templateSettings.category" class="tw-w-full">
+                                    <nz-option value="custom" nzLabel="Custom"></nz-option>
+                                    <nz-option value="system" nzLabel="System"></nz-option>
+                                    <nz-option value="shared" nzLabel="Shared"></nz-option>
+                                </nz-select>
+                            </div>
+
+                            <div class="md:tw-col-span-2">
+                                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                    Description
+                                </label>
+                                <textarea nz-input [(ngModel)]="templateSettings.description"
+                                    placeholder="Template description" rows="3" class="tw-w-full">
+                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rendering Options -->
+                    <nz-divider nzText="Rendering Options"></nz-divider>
+
+                    <div class="tw-space-y-4">
+                        <label nz-checkbox [(ngModel)]="templateSettings.enableCache">
+                            Enable Template Caching
+                        </label>
+                        <label nz-checkbox [(ngModel)]="templateSettings.enableSafeMode">
+                            Enable Safe Mode (Sanitize HTML)
+                        </label>
+                        <label nz-checkbox [(ngModel)]="templateSettings.enableDebugMode">
+                            Enable Debug Mode
+                        </label>
+                        <label nz-checkbox [(ngModel)]="templateSettings.enableAutoRefresh">
+                            Auto Refresh on Data Change
+                        </label>
+                    </div>
+
+                    <!-- Theme Integration -->
+                    <nz-divider nzText="Theme Integration"></nz-divider>
+
+                    <div class="tw-space-y-4">
+                        <label nz-checkbox [(ngModel)]="templateSettings.useThemeVariables">
+                            Use Theme CSS Variables
+                        </label>
+                        <label nz-checkbox [(ngModel)]="templateSettings.adaptToTheme">
+                            Auto-adapt Colors to Theme
+                        </label>
+                        <label nz-checkbox [(ngModel)]="templateSettings.includeThemeClasses">
+                            Include Theme Utility Classes
+                        </label>
+                    </div>
+
+                    <!-- Save Settings -->
+                    <div class="tw-flex tw-justify-end tw-pt-4 tw-border-t theme-border-primary">
+                        <div class="tw-flex tw-gap-2">
+                            <button nz-button nzType="default" (click)="resetSettings()">
+                                Reset Settings
+                            </button>
+                            <button nz-button nzType="primary" (click)="saveSettings()">
+                                <i nz-icon nzType="save"></i>
+                                Save Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nz-tab>
+        </nz-tabset>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && availableTemplates.length === 0"
+        class="tw-text-center tw-py-12 theme-bg-secondary tw-rounded-lg">
+        <i nz-icon nzType="file-text" class="tw-text-4xl theme-text-tertiary tw-mb-4"></i>
+        <h4 class="tw-text-lg tw-font-medium theme-text-primary tw-mb-2">
+            No Templates Available
+        </h4>
+        <p class="tw-text-sm theme-text-secondary tw-mb-4">
+            Create your first template to get started.
+        </p>
+        <button nz-button nzType="primary" (click)="createNewTemplate()">
+            <i nz-icon nzType="plus"></i>
+            Create Template
+        </button>
+    </div>
+</div>
+
+<!-- Template Creation Modal -->
+<nz-modal [(nzVisible)]="showCreateModal" nzTitle="Create New Template" [nzFooter]="null" nzWidth="600px"
+    (nzOnCancel)="closeCreateModal()">
+
+    <div *nzModalContent class="tw-space-y-4">
+        <div class="tw-space-y-4">
+            <div>
+                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                    Template Name
+                </label>
+                <input nz-input [(ngModel)]="newTemplate.name" placeholder="Enter template name" class="tw-w-full">
+            </div>
+
+            <div>
+                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                    Template Type
+                </label>
+                <nz-select [(ngModel)]="newTemplate.type" class="tw-w-full">
+                    <nz-option value="html" nzLabel="HTML Template"></nz-option>
+                    <nz-option value="card" nzLabel="Card Template"></nz-option>
+                    <nz-option value="list" nzLabel="List Template"></nz-option>
+                    <nz-option value="table" nzLabel="Table Template"></nz-option>
+                    <nz-option value="form" nzLabel="Form Template"></nz-option>
+                </nz-select>
+            </div>
+
+            <div>
+                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                    Description
+                </label>
+                <textarea nz-input [(ngModel)]="newTemplate.description" placeholder="Template description" rows="3"
+                    class="tw-w-full">
+            </textarea>
+            </div>
+        </div>
+
+        <div class="tw-flex tw-justify-end tw-gap-2 tw-pt-4 tw-border-t theme-border-primary">
+            <button nz-button nzType="default" (click)="closeCreateModal()">
+                Cancel
+            </button>
+            <button nz-button nzType="primary" (click)="createTemplate()">
+                <i nz-icon nzType="plus"></i>
+                Create Template
+            </button>
+        </div>
+    </div>
+</nz-modal>

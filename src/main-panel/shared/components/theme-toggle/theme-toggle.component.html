@@ -1,0 +1,71 @@
+<a nz-dropdown [nzTrigger]="'click'" [nzPlacement]="'bottomRight'" [nzDropdownMenu]="themeMenu">
+    <nz-icon nzType="down" />
+</a>
+
+<nz-dropdown-menu #themeMenu="nzDropdownMenu">
+    <button nz-button nzType="text" nz-tooltip [nzTooltipTitle]="tooltipText()" class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-rounded-lg
+               tw-transition-all tw-duration-200
+               theme-light:tw-text-gray-700 theme-light:hover:tw-bg-gray-100
+               theme-dark:tw-text-gray-300 theme-dark:hover:tw-bg-gray-700
+               theme-custom:tw-text-[var(--theme-text)] theme-custom:hover:tw-bg-[var(--theme-surface)]" nz-dropdown>
+
+        <i nz-icon [nzType]="currentIcon()" class="tw-text-lg"></i>
+
+        <span class="tw-hidden md:tw-inline-block tw-font-medium">
+            {{ currentThemeLabel() }}
+        </span>
+
+        <nz-badge *ngIf="themeService.autoDetectSystem()" nzStatus="processing" nzText="" class="tw-ml-1">
+        </nz-badge>
+
+        <i nz-icon nzType="down" class="tw-text-xs tw-ml-1"></i>
+    </button>
+
+    <ul nz-menu class="tw-w-64">
+        <!-- Theme Mode Section -->
+        <li nz-menu-group nzTitle="Theme Mode">
+            <ul>
+                <li nz-menu-item (click)="setTheme('light')"
+                    [class.ant-menu-item-selected]="themeService.currentTheme() === 'light'">
+                    <i nz-icon nzType="sun" class="tw-mr-2"></i>
+                    Light Mode
+                </li>
+                <li nz-menu-item (click)="setTheme('dark')"
+                    [class.ant-menu-item-selected]="themeService.currentTheme() === 'dark'">
+                    <i nz-icon nzType="moon" class="tw-mr-2"></i>
+                    Dark Mode
+                </li>
+                <li nz-menu-divider></li>
+                <li nz-menu-item (click)="toggleAutoDetect()"
+                    [class.ant-menu-item-selected]="themeService.autoDetectSystem()">
+                    <i nz-icon nzType="sync" class="tw-mr-2"></i>
+                    Auto (System)
+                    <nz-badge *ngIf="themeService.autoDetectSystem()" nzStatus="processing" class="tw-ml-auto">
+                    </nz-badge>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Custom Themes Section -->
+        <li nz-menu-group nzTitle="Custom Themes">
+            <ul>
+                <li nz-menu-item *ngFor="let theme of themeService.predefinedThemes"
+                    (click)="setPredefinedTheme(theme.name)"
+                    [class.ant-menu-item-selected]="isCustomThemeSelected(theme.name)">
+
+                    <div class="tw-flex tw-items-center tw-gap-3">
+                        <div class="tw-w-4 tw-h-4 tw-rounded-full tw-border tw-border-gray-300"
+                            [style.background]="theme.primary">
+                        </div>
+                        <span>{{ theme.name }}</span>
+                    </div>
+                </li>
+                <li nz-menu-divider></li>
+                <li nz-menu-item (click)="openCustomThemeBuilder()">
+                    <i nz-icon nzType="plus" class="tw-mr-2"></i>
+                    Create Custom Theme
+                </li>
+            </ul>
+        </li>
+    </ul>
+</nz-dropdown-menu>

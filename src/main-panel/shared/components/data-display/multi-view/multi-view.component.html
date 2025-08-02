@@ -1,0 +1,235 @@
+<div class="tw-space-y-4">
+    <!-- Multi View Header -->
+    <div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
+        <div>
+            <h4 class="tw-text-lg tw-font-semibold theme-text-primary">
+                Multi View Display
+            </h4>
+            <p class="tw-text-sm theme-text-secondary tw-mt-1">
+                Switch between different view modes
+            </p>
+        </div>
+
+        <div class="tw-flex tw-gap-2">
+            <nz-select [(ngModel)]="selectedViewType" (ngModelChange)="onViewTypeChange()" class="tw-w-32">
+                <nz-option value="all" nzLabel="All Views"></nz-option>
+                <nz-option value="grid" nzLabel="Grid Only"></nz-option>
+                <nz-option value="list" nzLabel="List Only"></nz-option>
+                <nz-option value="table" nzLabel="Table Only"></nz-option>
+            </nz-select>
+
+            <button nz-button nzType="default" nzSize="small" (click)="refreshAllViews()" class="theme-transition">
+                <i nz-icon nzType="reload"></i>
+                Refresh All
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="tw-text-center tw-py-12">
+        <nz-spin nzTip="Loading views..." nzSize="large"></nz-spin>
+    </div>
+
+    <!-- Multi View Tabs -->
+    <nz-tabset *ngIf="!isLoading" [nzType]="config.showInModal ? 'card' : 'line'" [nzTabPosition]="tabPosition"
+        [nzAnimated]="{ inkBar: true, tabPane: true }" class="theme-bg-primary tw-rounded-lg theme-shadow-sm">
+
+        <nz-tab *ngFor="let view of filteredViewData; let i = index" [nzTitle]="tabTitle" [nzDisabled]="view.disabled">
+
+            <!-- Tab Title Template -->
+            <ng-template #tabTitle>
+                <div class="tw-flex tw-items-center tw-gap-2">
+                    <i nz-icon [nzType]="view.icon || getViewIcon(view.type)" class="tw-text-sm"></i>
+                    <span>{{ view.title || 'View ' + (i + 1) }}</span>
+                    <nz-tag *ngIf="view.count !== undefined"
+                        [nzColor]="view.type === 'grid' ? 'blue' : view.type === 'list' ? 'green' : 'purple'"
+                        class="tw-text-xs tw-ml-1">
+                        {{ view.count }}
+                    </nz-tag>
+                </div>
+            </ng-template>
+
+            <!-- Tab Content -->
+            <div class="tw-p-4 tw-min-h-[300px]">
+
+                <!-- Grid View -->
+                <div *ngIf="view.type === 'grid'" class="tw-space-y-4">
+                    <div class="tw-flex tw-items-center tw-justify-between">
+                        <h5 class="tw-font-medium theme-text-primary">Grid View</h5>
+                        <div class="tw-flex tw-gap-2">
+                            <button nz-button nzSize="small" nzType="default" (click)="addGridItem(view)">
+                                <i nz-icon nzType="plus"></i>
+                                Add Item
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
+                        <nz-card *ngFor="let item of view.items" [nzTitle]="item.title" [nzExtra]="gridItemExtra"
+                            class="tw-shadow-sm theme-bg-primary theme-border-primary hover:theme-shadow-md tw-transition-all tw-duration-200">
+
+                            <div class="tw-space-y-2">
+                                <p class="tw-text-sm theme-text-secondary">{{ item.description }}</p>
+                                <div class="tw-flex tw-items-center tw-gap-2">
+                                    <nz-tag [nzColor]="getStatusColor(item.status)">{{ item.status }}</nz-tag>
+                                    <span class="tw-text-xs theme-text-tertiary">{{ item.lastUpdated | date:'short'
+                                        }}</span>
+                                </div>
+                            </div>
+
+                            <ng-template #gridItemExtra>
+                                <button nz-button nzType="text" nzSize="small" (click)="viewItem(item)">
+                                    <i nz-icon nzType="eye"></i>
+                                </button>
+                            </ng-template>
+                        </nz-card>
+                    </div>
+                </div>
+
+                <!-- List View -->
+                <div *ngIf="view.type === 'list'" class="tw-space-y-4">
+                    <div class="tw-flex tw-items-center tw-justify-between">
+                        <h5 class="tw-font-medium theme-text-primary">List View</h5>
+                        <div class="tw-flex tw-gap-2">
+                            <button nz-button nzSize="small" nzType="default" (click)="addListItem(view)">
+                                <i nz-icon nzType="plus"></i>
+                                Add Item
+                            </button>
+                        </div>
+                    </div>
+
+                    <nz-list [nzDataSource]="view.items" [nzRenderItem]="listItem" [nzSize]="'small'">
+                        <ng-template #listItem let-item>
+                            <nz-list-item [nzActions]="[listAction1, listAction2]">
+                                <nz-list-item-meta [nzTitle]="item.title" [nzDescription]="item.description"
+                                    [nzAvatar]="item.avatar">
+                                </nz-list-item-meta>
+
+                                <div class="tw-text-right">
+                                    <nz-tag [nzColor]="getStatusColor(item.status)">{{ item.status }}</nz-tag>
+                                    <div class="tw-text-xs theme-text-tertiary tw-mt-1">
+                                        {{ item.lastUpdated | date:'short' }}
+                                    </div>
+                                </div>
+
+                                <ng-template #listAction1>
+                                    <button nz-button nzType="link" nzSize="small" (click)="editItem(item)">
+                                        <i nz-icon nzType="edit"></i> Edit
+                                    </button>
+                                </ng-template>
+
+                                <ng-template #listAction2>
+                                    <button nz-button nzType="link" nzSize="small" nzDanger (click)="deleteItem(item)">
+                                        <i nz-icon nzType="delete"></i> Delete
+                                    </button>
+                                </ng-template>
+                            </nz-list-item>
+                        </ng-template>
+                    </nz-list>
+                </div>
+
+                <!-- Table View -->
+                <div *ngIf="view.type === 'table'" class="tw-space-y-4">
+                    <div class="tw-flex tw-items-center tw-justify-between">
+                        <h5 class="tw-font-medium theme-text-primary">Table View</h5>
+                        <div class="tw-flex tw-gap-2">
+                            <button nz-button nzSize="small" nzType="default" (click)="exportTable(view)">
+                                <i nz-icon nzType="download"></i>
+                                Export
+                            </button>
+                            <button nz-button nzSize="small" nzType="default" (click)="addTableRow(view)">
+                                <i nz-icon nzType="plus"></i>
+                                Add Row
+                            </button>
+                        </div>
+                    </div>
+
+                    <nz-table [nzData]="view.items" [nzSize]="'small'" [nzPageSize]="10"
+                        [nzShowPagination]="view.items.length > 10" class="theme-bg-primary">
+
+                        <thead>
+                            <tr>
+                                <th *ngFor="let col of view.columns">{{ col.title }}</th>
+                                <th nzWidth="120px">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of view.items">
+                                <td *ngFor="let col of view.columns">
+                                    <span *ngIf="col.key !== 'status'">{{ item[col.key] }}</span>
+                                    <nz-tag *ngIf="col.key === 'status'" [nzColor]="getStatusColor(item[col.key])">
+                                        {{ item[col.key] }}
+                                    </nz-tag>
+                                </td>
+                                <td>
+                                    <nz-button-group nzSize="small">
+                                        <button nz-button nzType="default" (click)="viewItem(item)">
+                                            <i nz-icon nzType="eye"></i>
+                                        </button>
+                                        <button nz-button nzType="default" (click)="editItem(item)">
+                                            <i nz-icon nzType="edit"></i>
+                                        </button>
+                                        <button nz-button nzDanger (click)="deleteItem(item)">
+                                            <i nz-icon nzType="delete"></i>
+                                        </button>
+                                    </nz-button-group>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </nz-table>
+                </div>
+
+                <!-- Charts/Analytics View -->
+                <div *ngIf="view.type === 'analytics'" class="tw-space-y-4">
+                    <div class="tw-flex tw-items-center tw-justify-between">
+                        <h5 class="tw-font-medium theme-text-primary">Analytics View</h5>
+                        <div class="tw-flex tw-gap-2">
+                            <nz-select [(ngModel)]="view.selectedMetric" class="tw-w-32">
+                                <nz-option value="sales" nzLabel="Sales"></nz-option>
+                                <nz-option value="users" nzLabel="Users"></nz-option>
+                                <nz-option value="revenue" nzLabel="Revenue"></nz-option>
+                            </nz-select>
+                        </div>
+                    </div>
+
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-4">
+                        <nz-card *ngFor="let metric of view.analytics"
+                            class="tw-text-center theme-bg-secondary theme-border-primary">
+                            <div class="tw-text-2xl tw-font-bold theme-text-primary">{{ metric.value }}</div>
+                            <div class="tw-text-sm theme-text-secondary">{{ metric.label }}</div>
+                            <div class="tw-text-xs tw-mt-1"
+                                [class]="metric.change > 0 ? 'tw-text-green-500' : 'tw-text-red-500'">
+                                {{ metric.change > 0 ? '+' : '' }}{{ metric.change }}%
+                            </div>
+                        </nz-card>
+                    </div>
+
+                    <div
+                        class="tw-h-64 tw-bg-gray-100 tw-rounded-lg tw-flex tw-items-center tw-justify-center theme-bg-tertiary">
+                        <div class="tw-text-center theme-text-secondary">
+                            <i nz-icon nzType="bar-chart" class="tw-text-4xl tw-mb-2"></i>
+                            <div>Chart visualization would go here</div>
+                            <div class="tw-text-xs tw-mt-1">Analytics for {{ view.selectedMetric }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nz-tab>
+    </nz-tabset>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && filteredViewData.length === 0"
+        class="tw-text-center tw-py-12 theme-bg-secondary tw-rounded-lg">
+        <i nz-icon nzType="eye-invisible" class="tw-text-4xl theme-text-tertiary tw-mb-4"></i>
+        <h4 class="tw-text-lg tw-font-medium theme-text-primary tw-mb-2">
+            No Views Available
+        </h4>
+        <p class="tw-text-sm theme-text-secondary tw-mb-4">
+            Configure view modes to display your data.
+        </p>
+        <button nz-button nzType="primary" (click)="createView()">
+            <i nz-icon nzType="plus"></i>
+            Create View
+        </button>
+    </div>
+</div>

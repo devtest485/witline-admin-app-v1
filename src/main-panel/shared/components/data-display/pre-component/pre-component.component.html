@@ -1,0 +1,457 @@
+<div class="tw-space-y-6">
+    <!-- Pre Component Header -->
+    <div class="tw-flex tw-items-center tw-justify-between">
+        <div>
+            <h4 class="tw-text-lg tw-font-semibold theme-text-primary">
+                Pre-Component Builder
+            </h4>
+            <p class="tw-text-sm theme-text-secondary tw-mt-1">
+                Design and preview components before implementation
+            </p>
+        </div>
+
+        <div class="tw-flex tw-gap-2">
+            <button nz-button nzType="default" nzSize="small" (click)="toggleDesignMode()" class="theme-transition">
+                <i nz-icon [nzType]="isDesignMode ? 'eye' : 'edit'"></i>
+                {{ isDesignMode ? 'Preview' : 'Design' }}
+            </button>
+
+            <button nz-button nzType="primary" nzSize="small" (click)="createNewComponent()" class="theme-transition">
+                <i nz-icon nzType="plus"></i>
+                New Component
+            </button>
+
+            <button nz-button nzType="default" nzSize="small" (click)="exportComponents()" class="theme-transition">
+                <i nz-icon nzType="download"></i>
+                Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="tw-text-center tw-py-12">
+        <nz-spin nzTip="Loading pre-components..." nzSize="large"></nz-spin>
+    </div>
+
+    <!-- Design/Preview Toggle Content -->
+    <div *ngIf="!isLoading">
+
+        <!-- Design Mode -->
+        <div *ngIf="isDesignMode" class="tw-grid tw-grid-cols-12 tw-gap-6">
+
+            <!-- Component Library Sidebar -->
+            <div class="tw-col-span-3">
+                <nz-card nzTitle="Component Library" [nzExtra]="libraryExtra"
+                    class="tw-h-[600px] theme-bg-primary theme-border-primary">
+
+                    <nz-tabset nzSize="small" nzType="card">
+                        <nz-tab nzTitle="Basic">
+                            <div class="tw-space-y-2 tw-p-2">
+                                <div *ngFor="let component of basicComponents" class="tw-p-3 tw-border tw-rounded tw-cursor-move theme-bg-secondary theme-border-primary
+                             hover:theme-bg-tertiary tw-transition-colors tw-duration-200" cdkDrag
+                                    [cdkDragData]="component" (cdkDragStarted)="onDragStart(component)">
+
+                                    <div class="tw-flex tw-items-center tw-gap-2">
+                                        <i nz-icon [nzType]="component.icon"
+                                            class="tw-text-sm theme-text-secondary"></i>
+                                        <span class="tw-text-sm tw-font-medium theme-text-primary">{{ component.name
+                                            }}</span>
+                                    </div>
+                                    <div class="tw-text-xs theme-text-tertiary tw-mt-1">{{ component.description }}
+                                    </div>
+                                </div>
+                            </div>
+                        </nz-tab>
+
+                        <nz-tab nzTitle="Layout">
+                            <div class="tw-space-y-2 tw-p-2">
+                                <div *ngFor="let layout of layoutComponents" class="tw-p-3 tw-border tw-rounded tw-cursor-move theme-bg-secondary theme-border-primary
+                             hover:theme-bg-tertiary tw-transition-colors tw-duration-200" cdkDrag
+                                    [cdkDragData]="layout">
+
+                                    <div class="tw-flex tw-items-center tw-gap-2">
+                                        <i nz-icon [nzType]="layout.icon" class="tw-text-sm theme-text-secondary"></i>
+                                        <span class="tw-text-sm tw-font-medium theme-text-primary">{{ layout.name
+                                            }}</span>
+                                    </div>
+                                    <div class="tw-text-xs theme-text-tertiary tw-mt-1">{{ layout.description }}</div>
+                                </div>
+                            </div>
+                        </nz-tab>
+
+                        <nz-tab nzTitle="Custom">
+                            <div class="tw-space-y-2 tw-p-2">
+                                <div *ngFor="let custom of customComponents" class="tw-p-3 tw-border tw-rounded tw-cursor-move theme-bg-secondary theme-border-primary
+                             hover:theme-bg-tertiary tw-transition-colors tw-duration-200" cdkDrag
+                                    [cdkDragData]="custom">
+
+                                    <div class="tw-flex tw-items-center tw-gap-2">
+                                        <i nz-icon [nzType]="custom.icon" class="tw-text-sm theme-text-secondary"></i>
+                                        <span class="tw-text-sm tw-font-medium theme-text-primary">{{ custom.name
+                                            }}</span>
+                                    </div>
+                                    <div class="tw-text-xs theme-text-tertiary tw-mt-1">{{ custom.description }}</div>
+                                </div>
+                            </div>
+                        </nz-tab>
+                    </nz-tabset>
+
+                    <ng-template #libraryExtra>
+                        <button nz-button nzType="text" nzSize="small" (click)="refreshLibrary()">
+                            <i nz-icon nzType="reload"></i>
+                        </button>
+                    </ng-template>
+                </nz-card>
+            </div>
+
+            <!-- Design Canvas -->
+            <div class="tw-col-span-6">
+                <nz-card nzTitle="Design Canvas" [nzExtra]="canvasExtra"
+                    class="tw-h-[600px] theme-bg-primary theme-border-primary">
+
+                    <div class="tw-h-full tw-border-2 tw-border-dashed tw-rounded-lg tw-p-4 tw-overflow-auto
+                       theme-border-secondary tw-relative" cdkDropList [cdkDropListData]="canvasComponents"
+                        (cdkDropListDropped)="onComponentDrop($event)">
+
+                        <!-- Canvas Grid Background -->
+                        <div class="tw-absolute tw-inset-0 tw-opacity-10"
+                            [style.background-image]="'url(data:image/svg+xml;base64,' + gridPattern + ')'">
+                        </div>
+
+                        <!-- Canvas Components -->
+                        <div *ngIf="canvasComponents.length === 0"
+                            class="tw-h-full tw-flex tw-items-center tw-justify-center tw-text-center">
+                            <div class="tw-space-y-4">
+                                <i nz-icon nzType="drag" class="tw-text-4xl theme-text-tertiary"></i>
+                                <div>
+                                    <h4 class="tw-font-medium theme-text-primary">Drag Components Here</h4>
+                                    <p class="tw-text-sm theme-text-secondary tw-mt-2">
+                                        Start building your component by dragging elements from the library
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngFor="let component of canvasComponents; let i = index"
+                            class="tw-relative tw-mb-4 tw-group" [class.selected]="selectedComponentIndex === i"
+                            (click)="selectComponent(i)">
+
+                            <!-- Component Wrapper -->
+                            <div class="tw-border tw-rounded tw-p-3 tw-transition-all tw-duration-200
+                              group-hover:tw-border-blue-400 theme-border-primary
+                              hover:theme-shadow-md" [class.tw-border-blue-500]="selectedComponentIndex === i"
+                                [innerHTML]="renderComponent(component)">
+                            </div>
+
+                            <!-- Component Controls -->
+                            <div class="tw-absolute tw-top-1 tw-right-1 tw-opacity-0 group-hover:tw-opacity-100 
+                              tw-transition-opacity tw-duration-200">
+                                <nz-button-group nzSize="small">
+                                    <button nz-button nzType="default" (click)="editComponent(component, i)"
+                                        nz-tooltip="Edit">
+                                        <i nz-icon nzType="edit"></i>
+                                    </button>
+                                    <button nz-button nzType="default" (click)="duplicateComponent(component, i)"
+                                        nz-tooltip="Duplicate">
+                                        <i nz-icon nzType="copy"></i>
+                                    </button>
+                                    <button nz-button nzDanger (click)="removeComponent(i)" nz-tooltip="Remove">
+                                        <i nz-icon nzType="delete"></i>
+                                    </button>
+                                </nz-button-group>
+                            </div>
+
+                            <!-- Component Label -->
+                            <div class="tw-absolute tw-bottom-1 tw-left-1 tw-bg-black tw-bg-opacity-75 
+                              tw-text-white tw-text-xs tw-px-2 tw-py-1 tw-rounded tw-opacity-0 
+                              group-hover:tw-opacity-100 tw-transition-opacity tw-duration-200">
+                                {{ component.name }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <ng-template #canvasExtra>
+                        <div class="tw-flex tw-gap-1">
+                            <button nz-button nzType="text" nzSize="small" (click)="clearCanvas()"
+                                nz-tooltip="Clear Canvas">
+                                <i nz-icon nzType="clear"></i>
+                            </button>
+                            <button nz-button nzType="text" nzSize="small" (click)="undoLastAction()" nz-tooltip="Undo">
+                                <i nz-icon nzType="undo"></i>
+                            </button>
+                            <button nz-button nzType="text" nzSize="small" (click)="redoLastAction()" nz-tooltip="Redo">
+                                <i nz-icon nzType="redo"></i>
+                            </button>
+                        </div>
+                    </ng-template>
+                </nz-card>
+            </div>
+
+            <!-- Properties Panel -->
+            <div class="tw-col-span-3">
+                <nz-card nzTitle="Properties" class="tw-h-[600px] theme-bg-primary theme-border-primary">
+
+                    <div *ngIf="selectedComponent" class="tw-space-y-4">
+                        <div class="tw-space-y-3">
+                            <div>
+                                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                    Component Name
+                                </label>
+                                <input nz-input [(ngModel)]="selectedComponent.name" (ngModelChange)="updateCanvas()"
+                                    class="tw-w-full">
+                            </div>
+
+                            <div *ngIf="selectedComponent.properties">
+                                <div *ngFor="let prop of selectedComponent.properties | keyvalue" class="tw-space-y-2">
+
+                                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block">
+                                        {{ prop.key | titlecase }}
+                                    </label>
+
+                                    <!-- String Input -->
+                                    <input *ngIf="getPropertyType(prop.value) === 'string'" nz-input
+                                        [(ngModel)]="selectedComponent.properties[prop.key]"
+                                        (ngModelChange)="updateCanvas()" class="tw-w-full">
+
+                                    <!-- Number Input -->
+                                    <nz-input-number *ngIf="getPropertyType(prop.value) === 'number'"
+                                        [(ngModel)]="selectedComponent.properties[prop.key]"
+                                        (ngModelChange)="updateCanvas()" class="tw-w-full">
+                                    </nz-input-number>
+
+                                    <!-- Boolean Switch -->
+                                    <nz-switch *ngIf="getPropertyType(prop.value) === 'boolean'"
+                                        [(ngModel)]="selectedComponent.properties[prop.key]"
+                                        (ngModelChange)="updateCanvas()">
+                                    </nz-switch>
+
+                                    <!-- Color Picker -->
+                                    <div *ngIf="prop.key.toLowerCase().includes('color')" class="tw-flex tw-gap-2">
+                                        <input type="color" [(ngModel)]="selectedComponent.properties[prop.key]"
+                                            (ngModelChange)="updateCanvas()"
+                                            class="tw-w-12 tw-h-8 tw-rounded tw-border theme-border-primary">
+                                        <input nz-input [(ngModel)]="selectedComponent.properties[prop.key]"
+                                            (ngModelChange)="updateCanvas()" class="tw-flex-1">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Style Properties -->
+                            <nz-divider nzText="Styling" nzOrientation="left"></nz-divider>
+
+                            <div class="tw-space-y-3">
+                                <div>
+                                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                        Width
+                                    </label>
+                                    <nz-select [(ngModel)]="selectedComponent.style.width"
+                                        (ngModelChange)="updateCanvas()" class="tw-w-full">
+                                        <nz-option value="auto" nzLabel="Auto"></nz-option>
+                                        <nz-option value="100%" nzLabel="Full Width"></nz-option>
+                                        <nz-option value="50%" nzLabel="Half Width"></nz-option>
+                                        <nz-option value="25%" nzLabel="Quarter Width"></nz-option>
+                                    </nz-select>
+                                </div>
+
+                                <div>
+                                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                        Padding
+                                    </label>
+                                    <nz-select [(ngModel)]="selectedComponent.style.padding"
+                                        (ngModelChange)="updateCanvas()" class="tw-w-full">
+                                        <nz-option value="0" nzLabel="None"></nz-option>
+                                        <nz-option value="8px" nzLabel="Small"></nz-option>
+                                        <nz-option value="16px" nzLabel="Medium"></nz-option>
+                                        <nz-option value="24px" nzLabel="Large"></nz-option>
+                                    </nz-select>
+                                </div>
+
+                                <div>
+                                    <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                        Border Radius
+                                    </label>
+                                    <nz-slider [(ngModel)]="selectedComponent.style.borderRadius"
+                                        (ngModelChange)="updateCanvas()" [nzMin]="0" [nzMax]="20" [nzMarks]="marks">
+                                    </nz-slider>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="!selectedComponent" class="tw-text-center tw-py-8">
+                        <i nz-icon nzType="select" class="tw-text-2xl theme-text-tertiary tw-mb-2"></i>
+                        <p class="tw-text-sm theme-text-secondary">
+                            Select a component to edit its properties
+                        </p>
+                    </div>
+                </nz-card>
+            </div>
+        </div>
+
+        <!-- Preview Mode -->
+        <div *ngIf="!isDesignMode" class="tw-space-y-6">
+
+            <!-- Preview Controls -->
+            <div class="tw-flex tw-items-center tw-justify-between tw-p-4 tw-rounded-lg theme-bg-secondary">
+                <div class="tw-flex tw-items-center tw-gap-4">
+                    <span class="tw-text-sm tw-font-medium theme-text-primary">Preview Mode:</span>
+                    <nz-radio-group [(ngModel)]="previewMode" (ngModelChange)="updatePreview()">
+                        <label nz-radio nzValue="desktop">Desktop</label>
+                        <label nz-radio nzValue="tablet">Tablet</label>
+                        <label nz-radio nzValue="mobile">Mobile</label>
+                    </nz-radio-group>
+                </div>
+
+                <div class="tw-flex tw-gap-2">
+                    <button nz-button nzType="default" nzSize="small" (click)="refreshPreview()">
+                        <i nz-icon nzType="reload"></i>
+                        Refresh
+                    </button>
+                    <button nz-button nzType="default" nzSize="small" (click)="fullscreenPreview()">
+                        <i nz-icon nzType="fullscreen"></i>
+                        Fullscreen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Component Preview List -->
+            <div class="tw-grid tw-gap-6" [ngClass]="getPreviewGridClass()">
+                <nz-card *ngFor="let component of preComponent; let i = index"
+                    [nzTitle]="component.name || 'Component ' + (i + 1)" [nzExtra]="previewExtra"
+                    class="theme-bg-primary theme-border-primary theme-shadow-sm hover:theme-shadow-md tw-transition-all tw-duration-200">
+
+                    <div class="tw-space-y-4">
+                        <!-- Component Status -->
+                        <div class="tw-flex tw-items-center tw-justify-between">
+                            <nz-tag [nzColor]="getComponentStatusColor(component)">
+                                {{ component.status || 'Draft' }}
+                            </nz-tag>
+                            <div class="tw-text-xs theme-text-tertiary">
+                                Last modified: {{ (component.lastModified || getCurrentDate()) | date:'short' }}
+                            </div>
+                        </div>
+
+                        <!-- Component Description -->
+                        <div *ngIf="component.description" class="tw-text-sm theme-text-secondary">
+                            {{ component.description }}
+                        </div>
+
+                        <!-- Component Metrics -->
+                        <div *ngIf="component.metrics" class="tw-grid tw-grid-cols-3 tw-gap-3">
+                            <div *ngFor="let metric of component.metrics"
+                                class="tw-text-center tw-p-2 tw-rounded theme-bg-tertiary">
+                                <div class="tw-text-lg tw-font-semibold theme-text-primary">{{ metric.value }}</div>
+                                <div class="tw-text-xs theme-text-secondary">{{ metric.label }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Component Preview -->
+                        <div class="tw-border tw-rounded tw-p-4 theme-border-secondary theme-bg-secondary">
+                            <div class="tw-text-xs tw-font-medium theme-text-secondary tw-mb-3">Preview:</div>
+                            <div [innerHTML]="renderComponentPreview(component)"></div>
+                        </div>
+
+                        <!-- Component Actions -->
+                        <div class="tw-flex tw-gap-2 tw-pt-3 tw-border-t theme-border-secondary">
+                            <button nz-button nzSize="small" nzType="primary" (click)="deployComponent(component, i)">
+                                <i nz-icon nzType="rocket"></i>
+                                Deploy
+                            </button>
+                            <button nz-button nzSize="small" nzType="default" (click)="editComponentCode(component, i)">
+                                <i nz-icon nzType="code"></i>
+                                Code
+                            </button>
+                            <button nz-button nzSize="small" nzType="default" (click)="testComponent(component, i)">
+                                <i nz-icon nzType="play-circle"></i>
+                                Test
+                            </button>
+                        </div>
+                    </div>
+
+                    <ng-template #previewExtra>
+                        <nz-button-group nzSize="small">
+                            <button nz-button nzType="default" (click)="favoriteComponent(component, i)">
+                                <i nz-icon [nzType]="component.isFavorite ? 'star' : 'star'"
+                                    [style.color]="component.isFavorite ? '#faad14' : ''"></i>
+                            </button>
+                            <button nz-button nzType="default" (click)="shareComponent(component, i)">
+                                <i nz-icon nzType="share-alt"></i>
+                            </button>
+                            <button nz-button nzType="default" (click)="cloneComponent(component, i)">
+                                <i nz-icon nzType="copy"></i>
+                            </button>
+                        </nz-button-group>
+                    </ng-template>
+                </nz-card>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && preComponent.length === 0 && !isDesignMode"
+        class="tw-text-center tw-py-12 theme-bg-secondary tw-rounded-lg">
+        <i nz-icon nzType="build" class="tw-text-4xl theme-text-tertiary tw-mb-4"></i>
+        <h4 class="tw-text-lg tw-font-medium theme-text-primary tw-mb-2">
+            No Pre-Components Created
+        </h4>
+        <p class="tw-text-sm theme-text-secondary tw-mb-4">
+            Start building your first component using the design mode.
+        </p>
+        <button nz-button nzType="primary" (click)="toggleDesignMode()">
+            <i nz-icon nzType="edit"></i>
+            Enter Design Mode
+        </button>
+    </div>
+</div>
+
+<!-- Component Editor Modal -->
+<nz-modal [(nzVisible)]="showComponentEditor" nzTitle="Component Editor" [nzFooter]="null" nzWidth="800px"
+    (nzOnCancel)="closeComponentEditor()">
+
+    <div *nzModalContent class="tw-space-y-4">
+        <nz-tabset>
+            <nz-tab nzTitle="Properties">
+                <div class="tw-p-4 tw-space-y-4">
+                    <!-- Component properties editor -->
+                    <div *ngIf="editingComponent">
+                        <div class="tw-space-y-3">
+                            <div>
+                                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                    Component Name
+                                </label>
+                                <input nz-input [(ngModel)]="editingComponent.name" class="tw-w-full">
+                            </div>
+
+                            <div>
+                                <label class="tw-text-sm tw-font-medium theme-text-primary tw-block tw-mb-2">
+                                    Description
+                                </label>
+                                <textarea nz-input [(ngModel)]="editingComponent.description" rows="3"
+                                    class="tw-w-full"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <nz-tab nzTitle="Code">
+                <div class="tw-p-4">
+                    <textarea class="tw-w-full tw-h-64 tw-font-mono tw-text-sm tw-p-3 tw-border tw-rounded
+                       theme-bg-primary theme-border-primary theme-text-primary" [(ngModel)]="editingComponentCode"
+                        placeholder="Component code...">
+              </textarea>
+                </div>
+            </nz-tab>
+        </nz-tabset>
+
+        <div class="tw-flex tw-justify-end tw-gap-2 tw-pt-4 tw-border-t theme-border-primary">
+            <button nz-button nzType="default" (click)="closeComponentEditor()">
+                Cancel
+            </button>
+            <button nz-button nzType="primary" (click)="saveComponent()">
+                <i nz-icon nzType="save"></i>
+                Save Component
+            </button>
+        </div>
+    </div>
+</nz-modal>

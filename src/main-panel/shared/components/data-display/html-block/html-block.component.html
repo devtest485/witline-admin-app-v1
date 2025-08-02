@@ -1,0 +1,180 @@
+<div class="tw-space-y-4">
+    <!-- HTML Block Header -->
+    <div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
+        <div>
+            <h4 class="tw-text-lg tw-font-semibold theme-text-primary">
+                HTML Block Renderer
+            </h4>
+            <p class="tw-text-sm theme-text-secondary tw-mt-1">
+                Dynamic HTML content with theme support
+            </p>
+        </div>
+
+        <div class="tw-flex tw-gap-2">
+            <button nz-button nzType="default" nzSize="small" (click)="toggleEditMode()" class="theme-transition">
+                <i nz-icon [nzType]="isEditMode ? 'eye' : 'edit'"></i>
+                {{ isEditMode ? 'Preview' : 'Edit' }}
+            </button>
+
+            <button nz-button nzType="default" nzSize="small" (click)="refreshContent()" class="theme-transition">
+                <i nz-icon nzType="reload"></i>
+                Refresh
+            </button>
+
+            <nz-select [(ngModel)]="selectedTemplate" (ngModelChange)="onTemplateChange()" class="tw-w-32"
+                nzPlaceHolder="Template">
+                <nz-option *ngFor="let template of availableTemplates" [nzValue]="template.id"
+                    [nzLabel]="template.name">
+                </nz-option>
+            </nz-select>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="tw-text-center tw-py-12">
+        <nz-spin nzTip="Loading HTML content..." nzSize="large"></nz-spin>
+    </div>
+
+    <!-- Content Area -->
+    <div *ngIf="!isLoading">
+
+        <!-- Edit Mode -->
+        <div *ngIf="isEditMode" class="tw-space-y-4">
+            <nz-tabset nzType="card">
+
+                <!-- HTML Editor -->
+                <nz-tab nzTitle="HTML Editor">
+                    <div class="tw-space-y-4 tw-p-4">
+                        <div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
+                            <label class="tw-text-sm tw-font-medium theme-text-primary">
+                                HTML Content
+                            </label>
+                            <div class="tw-flex tw-gap-2">
+                                <button nz-button nzSize="small" nzType="default" (click)="formatCode()"
+                                    nz-tooltip="Format Code">
+                                    <i nz-icon nzType="code"></i>
+                                </button>
+                                <button nz-button nzSize="small" nzType="default" (click)="insertThemeVariables()"
+                                    nz-tooltip="Insert Theme Variables">
+                                    <i nz-icon nzType="bg-colors"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <textarea class="tw-w-full tw-h-64 tw-p-3 tw-border tw-rounded-lg tw-font-mono tw-text-sm
+                         theme-bg-primary theme-border-primary theme-text-primary tw-resize-none
+                         focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500" [(ngModel)]="rawHtmlContent"
+                            (ngModelChange)="onContentChange()" placeholder="Enter your HTML content here...">
+                        </textarea>
+
+                        <div class="tw-flex tw-items-center tw-gap-4 tw-text-xs theme-text-secondary">
+                            <span>Lines: {{ getLineCount() }}</span>
+                            <span>Characters: {{ rawHtmlContent.length }}</span>
+                            <span>Theme Variables Available: {{ themeVariables.length }}</span>
+                        </div>
+                    </div>
+                </nz-tab>
+
+                <!-- Theme Variables -->
+                <nz-tab nzTitle="Theme Variables">
+                    <div class="tw-p-4 tw-space-y-4">
+                        <div class="tw-text-sm theme-text-secondary tw-mb-3">
+                            Available theme variables for use in your HTML:
+                        </div>
+
+                        <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-3">
+                            <div *ngFor="let variable of themeVariables" class="tw-p-3 tw-border tw-rounded-lg theme-bg-secondary theme-border-primary tw-cursor-pointer
+                              hover:theme-bg-tertiary tw-transition-colors tw-duration-200"
+                                (click)="copyToClipboard(variable.css)">
+
+                                <div class="tw-flex tw-items-center tw-justify-between">
+                                    <div class="tw-font-mono tw-text-xs theme-text-primary">
+                                        {{ variable.css }}
+                                    </div>
+                                    <div class="tw-w-4 tw-h-4 tw-rounded tw-border theme-border-secondary"
+                                        [style.background-color]="variable.value">
+                                    </div>
+                                </div>
+
+                                <div class="tw-text-xs theme-text-secondary tw-mt-1">
+                                    {{ variable.description }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nz-tab>
+
+                <!-- Data Context -->
+                <nz-tab nzTitle="Data Context">
+                    <div class="tw-p-4">
+                        <div class="tw-text-sm theme-text-secondary tw-mb-3">
+                            Available data for templating:
+                        </div>
+
+                        <pre class="tw-bg-gray-100 tw-p-3 tw-rounded-lg tw-text-xs tw-overflow-auto tw-max-h-64
+                           theme-bg-tertiary theme-text-primary">{{ getDataContext() }}</pre>
+
+                        <div class="tw-mt-3 tw-text-xs theme-text-secondary">
+                            Use syntax to access data properties in your HTML.
+                        </div>
+                    </div>
+                </nz-tab>
+            </nz-tabset>
+        </div>
+
+        <!-- Preview Mode -->
+        <div *ngIf="!isEditMode" class="tw-space-y-4">
+
+            <!-- Content Preview -->
+            <nz-card class="tw-min-h-[400px] theme-bg-primary theme-border-primary theme-shadow-sm">
+
+                <div class="tw-space-y-4">
+                    <!-- Rendered Content -->
+                    <div *ngIf="processedHtmlContent" class="tw-prose tw-max-w-none theme-text-primary"
+                        [innerHTML]="processedHtmlContent">
+                    </div>
+
+                    <!-- Fallback Content -->
+                    <div *ngIf="!processedHtmlContent" class="tw-text-center tw-py-12">
+                        <div class="tw-space-y-4">
+                            <i nz-icon nzType="file-text" class="tw-text-4xl theme-text-tertiary"></i>
+                            <h4 class="tw-text-lg tw-font-medium theme-text-primary">
+                                No HTML Content
+                            </h4>
+                            <p class="tw-text-sm theme-text-secondary">
+                                {{ fallbackMessage }}
+                            </p>
+                            <button nz-button nzType="primary" (click)="loadSampleContent()">
+                                <i nz-icon nzType="plus"></i>
+                                Load Sample Content
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nz-card>
+
+            <!-- Content Stats -->
+            <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-4 tw-gap-4">
+                <nz-card class="tw-text-center theme-bg-secondary theme-border-primary">
+                    <div class="tw-text-lg tw-font-semibold theme-text-primary">{{ contentStats.elements }}</div>
+                    <div class="tw-text-xs theme-text-secondary">HTML Elements</div>
+                </nz-card>
+
+                <nz-card class="tw-text-center theme-bg-secondary theme-border-primary">
+                    <div class="tw-text-lg tw-font-semibold theme-text-primary">{{ contentStats.classes }}</div>
+                    <div class="tw-text-xs theme-text-secondary">CSS Classes</div>
+                </nz-card>
+
+                <nz-card class="tw-text-center theme-bg-secondary theme-border-primary">
+                    <div class="tw-text-lg tw-font-semibold theme-text-primary">{{ contentStats.themeVars }}</div>
+                    <div class="tw-text-xs theme-text-secondary">Theme Variables</div>
+                </nz-card>
+
+                <nz-card class="tw-text-center theme-bg-secondary theme-border-primary">
+                    <div class="tw-text-lg tw-font-semibold theme-text-primary">{{ contentStats.dataBindings }}</div>
+                    <div class="tw-text-xs theme-text-secondary">Data Bindings</div>
+                </nz-card>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,131 @@
+<div class="tw-space-y-4">
+    <!-- List Header -->
+    <div class="tw-flex tw-items-center tw-justify-between">
+        <div>
+            <h4 class="tw-text-lg tw-font-semibold theme-text-primary">
+                List View
+            </h4>
+            <p class="tw-text-sm theme-text-secondary tw-mt-1">
+                {{ listData.length }} items
+            </p>
+        </div>
+
+        <div class="tw-flex tw-gap-2">
+            <button nz-button nzType="default" nzSize="small" (click)="toggleSelectAll()">
+                <i nz-icon [nzType]="isAllSelected ? 'minus-square' : 'plus-square'"></i>
+                {{ isAllSelected ? 'Deselect All' : 'Select All' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- List Content -->
+    <nz-list [nzDataSource]="listData" [nzRenderItem]="item" [nzLoading]="loading"
+        class="theme-bg-primary tw-rounded-lg tw-border theme-border-primary theme-transition">
+
+        <ng-template #item let-item let-index="index">
+            <nz-list-item [nzActions]="[action1, action2, action3]" class="tw-transition-all tw-duration-200 hover:theme-bg-secondary
+                   tw-border-b theme-border-secondary last:tw-border-b-0">
+
+                <!-- Selection Checkbox -->
+                <label nz-checkbox [(ngModel)]="item.selected" (ngModelChange)="onItemSelectionChange()"
+                    class="tw-mr-3">
+                </label>
+
+                <!-- List Item Content -->
+                <nz-list-item-meta [nzTitle]="itemTitle" [nzDescription]="itemDescription" [nzAvatar]="itemAvatar">
+
+                    <ng-template #itemTitle>
+                        <div class="tw-flex tw-items-center tw-gap-2">
+                            <span class="tw-font-medium theme-text-primary">
+                                {{ item.title || item.name || 'Item ' + (index + 1) }}
+                            </span>
+
+                            <nz-tag *ngIf="item.status" [nzColor]="getStatusColor(item.status)" class="tw-text-xs">
+                                {{ item.status }}
+                            </nz-tag>
+                        </div>
+                    </ng-template>
+
+                    <ng-template #itemDescription>
+                        <div class="tw-space-y-1">
+                            <p class="tw-text-sm theme-text-secondary">
+                                {{ item.description || 'No description available' }}
+                            </p>
+
+                            <div *ngIf="item.tags && item.tags.length" class="tw-flex tw-flex-wrap tw-gap-1">
+                                <nz-tag *ngFor="let tag of item.tags.slice(0, 3)" [nzColor]="getTagColor(tag)"
+                                    class="tw-text-xs">
+                                    {{ tag }}
+                                </nz-tag>
+                                <span *ngIf="item.tags.length > 3" class="tw-text-xs theme-text-tertiary">
+                                    +{{ item.tags.length - 3 }} more
+                                </span>
+                            </div>
+
+                            <div *ngIf="item.lastModified" class="tw-text-xs theme-text-tertiary">
+                                Last modified: {{ item.lastModified | date:'short' }}
+                            </div>
+                        </div>
+                    </ng-template>
+
+                    <ng-template #itemAvatar>
+                        <nz-avatar [nzIcon]="getItemIcon(item)" [nzSrc]="item.avatar" [style]="getAvatarStyle(item)"
+                            class="tw-border theme-border-primary">
+                        </nz-avatar>
+                    </ng-template>
+                </nz-list-item-meta>
+
+                <!-- Item Stats -->
+                <div class="tw-flex tw-flex-col tw-items-end tw-gap-1 tw-ml-4">
+                    <div *ngIf="item.priority" class="tw-text-xs tw-font-medium"
+                        [class]="getPriorityClass(item.priority)">
+                        {{ item.priority.toUpperCase() }}
+                    </div>
+
+                    <div *ngIf="item.progress !== undefined" class="tw-text-xs theme-text-secondary">
+                        {{ item.progress }}% complete
+                    </div>
+                </div>
+
+                <!-- Actions Templates -->
+                <ng-template #action1>
+                    <button nz-button nzType="link" nzSize="small" (click)="viewItem(item, index)"
+                        class="theme-transition">
+                        <i nz-icon nzType="eye"></i> View
+                    </button>
+                </ng-template>
+
+                <ng-template #action2>
+                    <button nz-button nzType="link" nzSize="small" (click)="editItem(item, index)"
+                        class="theme-transition">
+                        <i nz-icon nzType="edit"></i> Edit
+                    </button>
+                </ng-template>
+
+                <ng-template #action3>
+                    <button nz-button nzType="link" nzSize="small" nzDanger (click)="deleteItem(item, index)"
+                        class="theme-transition">
+                        <i nz-icon nzType="delete"></i> Delete
+                    </button>
+                </ng-template>
+            </nz-list-item>
+        </ng-template>
+    </nz-list>
+
+    <!-- Bulk Actions -->
+    <div *ngIf="selectedCount > 0" class="tw-flex tw-items-center tw-gap-4 tw-p-3 tw-rounded-lg 
+                  theme-bg-secondary tw-border theme-border-primary">
+        <span class="tw-text-sm tw-font-medium theme-text-primary">
+            {{ selectedCount }} item(s) selected
+        </span>
+
+        <div class="tw-flex tw-gap-2">
+            <button nz-button nzType="primary" nzSize="small" (click)="bulkEdit()">
+                <i nz-icon nzType="edit"></i> Bulk Edit
+            </button>
+            <button nz-button nzDanger nzSize="small" (click)="bulkDelete()">
+                <i nz-icon nzType="delete"></i> Delete Selected
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,76 @@
+<div [class]="containerClasses()">
+    <!-- Header for Modal/Popup with theme support -->
+    <div *ngIf="config.showInModal" class="tw-mb-4 tw-pb-4 tw-border-b theme-border-primary">
+        <h3 class="tw-text-lg tw-font-semibold theme-text-primary">
+            {{ config.headerTitle || 'Component' }}
+        </h3>
+        <p *ngIf="config.headerSubtitle" class="tw-text-sm tw-mt-1 theme-text-secondary">
+            {{ config.headerSubtitle }}
+        </p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="tw-flex tw-items-center tw-justify-center tw-py-12">
+        <nz-spin nzTip="Loading component..." nzSize="large"></nz-spin>
+    </div>
+
+    <!-- Dynamic Component Renderer with theme-aware containers -->
+    <div *ngIf="!isLoading" [ngSwitch]="context.dataDisplay">
+
+        <!-- Panel View -->
+        <app-panel-view *ngSwitchCase="DataDisplay.PanelView" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-panel-view>
+
+        <!-- Multi View -->
+        <app-multi-view *ngSwitchCase="DataDisplay.MultiView" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-multi-view>
+
+        <!-- List View -->
+        <app-list-view *ngSwitchCase="DataDisplay.ListView" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-list-view>
+
+        <!-- Grid View -->
+        <app-grid-view *ngSwitchCase="DataDisplay.GridView" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-grid-view>
+
+        <!-- HTML Block -->
+        <app-html-block *ngSwitchCase="DataDisplay.HtmlBlock" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-html-block>
+
+        <!-- Template -->
+        <app-template-view *ngSwitchCase="DataDisplay.Template" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-template-view>
+
+        <!-- Pre Component -->
+        <app-pre-component *ngSwitchCase="DataDisplay.PreComponent" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-pre-component>
+
+        <!-- Web Component -->
+        <app-web-component *ngSwitchCase="DataDisplay.WebComponent" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-web-component>
+
+        <!-- Model -->
+        <app-model-view *ngSwitchCase="DataDisplay.Model" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-model-view>
+
+        <!-- Model Field -->
+        <app-model-field *ngSwitchCase="DataDisplay.ModelField" [context]="context" [config]="config"
+            class="tw-block theme-transition">
+        </app-model-field>
+
+        <!-- Default/Unknown -->
+        <div *ngSwitchDefault class="tw-p-8 tw-text-center theme-bg-secondary tw-rounded-lg">
+            <nz-empty nzNotFoundContent="Unsupported display type" class="theme-text-secondary">
+            </nz-empty>
+        </div>
+    </div>
+</div>
