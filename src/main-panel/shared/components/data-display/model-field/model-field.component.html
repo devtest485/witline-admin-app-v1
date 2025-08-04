@@ -429,7 +429,7 @@
                                                 </div>
                                                 <div class="tw-flex tw-justify-between">
                                                     <span class="theme-text-secondary">Type:</span>
-                                                    <nz-tag [nzColor]="getFieldTypeColor(selectedField.type)">
+                                                    <nz-tag [nzColor]="getFieldTypeColor(selectedField?.type || 'text')">
                                                         {{ selectedField.type }}
                                                     </nz-tag>
                                                 </div>

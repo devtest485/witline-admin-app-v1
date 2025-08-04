@@ -53,7 +53,39 @@ export const appConfig: ApplicationConfig = {
           // { name: 'ng-select', component: NgSelectFieldComponent },
           // { name: 'ng-search', component: NgSelectFieldComponent },
         ],
-      })
+      }),
+      // DynamicUIModule.forRoot({
+      //   theme: {
+      //     defaultMode: 'light',
+      //     autoDetectSystem: true,
+      //     customThemes: [
+      //       {
+      //         name: 'Witline Blue',
+      //         primary: '#1890ff',
+      //         secondary: '#722ed1',
+      //         accent: '#13c2c2',
+      //         background: '#f0f2f5',
+      //         surface: '#ffffff',
+      //         text: '#000000',
+      //         textSecondary: '#666666',
+      //         border: '#d9d9d9',
+      //         success: '#52c41a',
+      //         warning: '#faad14',
+      //         error: '#ff4d4f',
+      //         info: '#1890ff'
+      //       }
+      //     ]
+      //   },
+      //   components: {
+      //     enableDragDrop: true,
+      //     enableRealTimeUpdates: true,
+      //     enablePerformanceMode: true
+      //   },
+      //   formly: {
+      //     customTypes: [],
+      //     customWrappers: []
+      //   }
+      // })
     ),
     provideAnimationsAsync(),
     provideHttpClient(),

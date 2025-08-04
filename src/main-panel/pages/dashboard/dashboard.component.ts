@@ -1,141 +1,113 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzGridModule } from 'ng-zorro-antd/grid';
-import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { Component, OnInit } from '@angular/core';
 import { DynamicUIRouterComponent } from '../dynamic-ui-router/dynamic-ui-router.component';
-import { CustomThemeBuilderComponent } from '../custom-theme-builder/custom-theme-builder.component';
-import { ComponentConfig, ComponentContext, CustomTheme } from '../../shared/interfaces/interfaces';
-import { ThemeService } from '../../shared/services/theme.service';
+import { ComponentConfig, ComponentContext } from '../../shared/interfaces/interfaces';
 import { UIComponent } from '../../shared/enums/uicomponent';
 import { DataDisplay } from '../../shared/enums/data-display';
 import { ComponentBehaviorService } from '../../shared/services/component-behavior.service';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { categoryLocatorData, sortedData } from '../data';
 
 @Component({
   selector: 'app-dashboard',
   imports: [
     CommonModule,
-    NzCardModule,
-    NzStatisticModule,
-    NzButtonModule,
-    NzIconModule,
-    NzGridModule,
     DynamicUIRouterComponent,
-    CustomThemeBuilderComponent
+    NzModalModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
-  gridContext!: ComponentContext;
-  gridConfig!: ComponentConfig;
+  mainContext!: ComponentContext;
+  mainConfig!: ComponentConfig;
 
-  listContext!: ComponentContext;
-  listConfig!: ComponentConfig;
+  rightPanelContext!: ComponentContext;
+  rightPanelConfig!: ComponentConfig;
 
-  showCustomThemeBuilder = false;
+  modalContext!: ComponentContext;
+  modalConfig!: ComponentConfig;
 
-  public themeService = inject(ThemeService);
-  private componentService = inject(ComponentBehaviorService);
+  // UI state
+  isLoading = false;
+  showRightPanel = false;
+  showModal = false;
+  modalTitle = '';
+  modalWidth = '800px';
+
+  constructor(
+    private componentService: ComponentBehaviorService,
+  ) { }
 
   ngOnInit() {
-    this.setupDemoData();
+    this.loadDashboardComponents();
   }
 
-  private setupDemoData() {
-    // Grid View Demo
-    this.gridContext = this.componentService.renderComponent(
-      UIComponent.NewComponent,
-      DataDisplay.GridView,
-      { categoryId: 1, trackingNumber: 'DEMO-001' },
-      [
-        {
-          title: 'Sample Card 1',
-          description: 'This is a demo card with theme support',
-          status: 'active',
-          childCategory: { name: 'Demo Category' },
-          tags: ['demo', 'sample', 'card']
-        },
-        {
-          title: 'Sample Card 2',
-          description: 'Another demo card showing theme colors',
-          status: 'pending',
-          childCategory: { name: 'Test Category' },
-          tags: ['test', 'theme']
-        }
-      ]
-    );
-    this.gridConfig = this.componentService.getComponentConfig(UIComponent.NewComponent);
+  // Replace your original checkComponentBehavior calls with these methods:
 
-    // List View Demo
-    this.listContext = this.componentService.renderComponent(
-      UIComponent.Component,
-      DataDisplay.ListView,
+  loadGridData() {
+    this.isLoading = true;
+
+    // Simulate data loading
+    setTimeout(() => {
+      this.mainContext = this.componentService.renderComponent(
+        categoryLocatorData.uiComponent,
+        categoryLocatorData.dataDisplay,
+        categoryLocatorData,
+        sortedData
+      );
+
+      this.mainConfig = this.componentService.getComponentConfig(UIComponent.NewComponent);
+      this.isLoading = false;
+    }, 1000);
+  }
+
+  loadRightPanelData() {
+    this.rightPanelContext = this.componentService.renderComponent(
+      UIComponent.RightPanel,
+      DataDisplay.PanelView,
       { categoryId: 2 },
       [
         {
-          title: 'Demo List Item 1',
-          description: 'First item in the themed list',
-          status: 'active',
-          priority: 'high',
-          type: 'task'
-        },
-        {
-          title: 'Demo List Item 2',
-          description: 'Second item with different status',
-          status: 'pending',
-          priority: 'medium',
-          type: 'project'
+          title: 'Quick Actions',
+          description: 'Frequently used actions',
+          actions: [
+            { label: 'New Report', icon: 'plus' },
+            { label: 'Export Data', icon: 'download' }
+          ]
         }
       ]
     );
-    this.listConfig = this.componentService.getComponentConfig(UIComponent.Component);
+
+    this.rightPanelConfig = this.componentService.getComponentConfig(UIComponent.RightPanel);
+    this.showRightPanel = true;
   }
 
-  testComponent(type: string): void {
-    console.log(`Testing ${type} component with current theme:`, this.themeService.currentTheme());
-
-    // You can implement specific component testing logic here
-    switch (type) {
-      case 'grid':
-        this.refreshGridData();
-        break;
-      case 'list':
-        this.refreshListData();
-        break;
-      // Add other cases
-    }
-  }
-
-  testPopup(): void {
-    // Demo popup with theme support
-    const popupContext = this.componentService.renderComponent(
+  openFormModal() {
+    this.modalContext = this.componentService.renderComponent(
       UIComponent.Popup,
-      DataDisplay.MultiView,
-      { categoryId: 999 },
+      DataDisplay.Model,
+      { categoryId: 3, name: 'User Form' },
       [
-        { title: 'Popup Demo', description: 'This popup respects your theme settings' }
+        {
+          name: 'Create User',
+          fields: ['name', 'email', 'role', 'department']
+        }
       ]
     );
 
-    console.log('Testing popup component:', popupContext);
-    // You would typically open a modal here
+    this.modalConfig = this.componentService.getComponentConfig(UIComponent.Popup);
+    this.modalTitle = 'Create New User';
+    this.modalWidth = '600px';
+    this.showModal = true;
   }
 
-  refreshGridData(): void {
-    console.log('Refreshing grid data...');
-    this.setupDemoData();
+  private loadDashboardComponents() {
+    // Load default dashboard view
+    this.loadGridData();
   }
 
-  refreshListData(): void {
-    console.log('Refreshing list data...');
-    this.setupDemoData();
-  }
-
-  onThemeCreated(theme: CustomTheme): void {
-    console.log('New custom theme created:', theme);
-    // Theme is automatically applied by the service
+  closeModal() {
+    this.showModal = false;
   }
 }

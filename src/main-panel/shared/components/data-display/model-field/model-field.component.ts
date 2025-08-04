@@ -30,6 +30,28 @@ import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzRateModule } from 'ng-zorro-antd/rate';
 
+interface ExtendedFormlyFieldConfig extends FormlyFieldConfig {
+  dependencies?: string[];
+  key: string | number;
+  type?: string;
+  templateOptions: {
+    label?: string;
+    placeholder?: string;
+    description?: string;
+    required?: boolean;
+    disabled?: boolean;
+    minLength?: number;
+    maxLength?: number;
+    pattern?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    type?: string;
+    fieldWidth?: string;
+    [key: string]: any;
+  };
+}
+
 @Component({
   selector: 'app-model-field',
   imports: [
@@ -37,7 +59,7 @@ import { NzRateModule } from 'ng-zorro-antd/rate';
     NzIconModule, NzTableModule, NzModalModule, NzSpinModule, NzFormModule,
     NzInputModule, NzSelectModule, NzSwitchModule, NzTagModule, NzToolTipModule,
     NzDividerModule, NzCollapseModule, NzTabsModule, NzStepsModule, NzAlertModule,
-    NzCodeEditorModule, NzTreeModule, NzTransferModule, CdkDrag, CdkDropList,
+    NzCodeEditorModule, NzTreeModule, NzTransferModule, CdkDrag,
     NzInputNumberModule, NzStatisticModule, NzProgressModule, NzRateModule, NzSelectModule
   ],
   templateUrl: './model-field.component.html',
@@ -48,9 +70,9 @@ export class ModelFieldComponent implements OnInit {
   @Input() config!: ComponentConfig;
 
   // Component State
-  modelFields: FormlyFieldConfig[] = [];
-  filteredModelFields: FormlyFieldConfig[] = [];
-  selectedField: FormlyFieldConfig | null = null;
+  modelFields: ExtendedFormlyFieldConfig[] = [];
+  filteredModelFields: ExtendedFormlyFieldConfig[] = [];
+  selectedField: ExtendedFormlyFieldConfig | null = null;
   selectedFieldIndex = -1;
   isLoading = false;
 
@@ -110,21 +132,23 @@ export class ModelFieldComponent implements OnInit {
     }, 500);
   }
 
+  private toExtended(field: FormlyFieldConfig): ExtendedFormlyFieldConfig {
+    return this.ensureTemplateOptions(field);
+  }
+
   private generateFieldsFromContext() {
-    // Generate fields based on context data structure
     const sampleData = this.context.sortedByAsc[0];
     Object.keys(sampleData).forEach(key => {
       const value = sampleData[key];
       const field = this.createFieldFromValue(key, value);
-      this.modelFields.push(field);
+      this.modelFields.push(this.toExtended(field));
     });
-
     this.filteredModelFields = [...this.modelFields];
   }
 
   private generateSampleFields() {
     this.modelFields = [
-      {
+      this.ensureTemplateOptions({
         key: 'firstName',
         type: 'input',
         templateOptions: {
@@ -134,8 +158,8 @@ export class ModelFieldComponent implements OnInit {
           minLength: 2,
           maxLength: 50
         }
-      },
-      {
+      }),
+      this.ensureTemplateOptions({
         key: 'email',
         type: 'input',
         templateOptions: {
@@ -147,8 +171,8 @@ export class ModelFieldComponent implements OnInit {
         validators: {
           validation: ['email']
         }
-      },
-      {
+      }),
+      this.ensureTemplateOptions({
         key: 'birthDate',
         type: 'datepicker',
         templateOptions: {
@@ -156,18 +180,52 @@ export class ModelFieldComponent implements OnInit {
           placeholder: 'Select date...',
           required: false
         }
-      },
-      {
+      }),
+      this.ensureTemplateOptions({
         key: 'newsletter',
         type: 'checkbox',
         templateOptions: {
           label: 'Subscribe to newsletter',
           description: 'Receive updates and promotions'
         }
-      }
+      })
     ];
 
     this.filteredModelFields = [...this.modelFields];
+  }
+
+  /**
+  * Safely get field key as string
+  */
+  getFieldKey(field: FormlyFieldConfig | null | undefined): string {
+    if (!field || !field.key) return 'unnamed';
+    if (Array.isArray(field.key)) return field.key[0]?.toString() || 'unnamed';
+    return field.key.toString();
+  }
+
+  /**
+   * Safely get field label with fallbacks
+   */
+  getFieldLabel(field: FormlyFieldConfig | null | undefined): string {
+    if (!field) return 'Unnamed Field';
+    return field.templateOptions?.label || this.getFieldKey(field) || 'Unnamed Field';
+  }
+
+  // Helper method to ensure field has templateOptions
+  private ensureTemplateOptions(field: FormlyFieldConfig | null): ExtendedFormlyFieldConfig {
+    if (!field) {
+      return {
+        key: `field_${Date.now()}`,
+        type: 'input',
+        templateOptions: {}
+      };
+    }
+
+    if (!field.templateOptions) {
+      field.templateOptions = {};
+    }
+
+    return field as ExtendedFormlyFieldConfig;
   }
 
   private createFieldFromValue(key: string, value: any): FormlyFieldConfig {
@@ -215,7 +273,7 @@ export class ModelFieldComponent implements OnInit {
 
   // Field Management
   createNewField() {
-    const newField: FormlyFieldConfig = {
+    const newField: ExtendedFormlyFieldConfig = {
       key: `field_${this.modelFields.length + 1}`,
       type: 'input',
       templateOptions: {
@@ -231,8 +289,13 @@ export class ModelFieldComponent implements OnInit {
     this.updateSchemaJson();
   }
 
-  selectField(field: FormlyFieldConfig, index: number) {
+  selectField(field: ExtendedFormlyFieldConfig, index: number) {
+    // Deep clone to avoid reference issues
     this.selectedField = JSON.parse(JSON.stringify(field));
+
+    // Ensure the cloned field has templateOptions
+    this.selectedField = this.ensureTemplateOptions(this.selectedField);
+
     this.selectedFieldIndex = index;
     this.configStep = 0;
     this.setupCustomValidationMessages();
@@ -240,7 +303,7 @@ export class ModelFieldComponent implements OnInit {
   }
 
   editField(field: FormlyFieldConfig, index: number) {
-    this.selectField(field, index);
+    // this.selectField(field, index);
   }
 
   cloneField(field: FormlyFieldConfig, index: number) {
@@ -292,7 +355,6 @@ export class ModelFieldComponent implements OnInit {
   // Field Configuration
   onFieldTypeChange() {
     if (this.selectedField) {
-      // Reset type-specific options when type changes
       this.selectedField.templateOptions = {
         ...this.selectedField.templateOptions,
         type: this.selectedField.type === 'input' ? 'text' : undefined
@@ -359,11 +421,15 @@ export class ModelFieldComponent implements OnInit {
     if (!this.selectedField) return 0;
 
     let count = 0;
-    if (this.selectedField.templateOptions?.required) count++;
-    if (this.selectedField.templateOptions?.minLength) count++;
-    if (this.selectedField.templateOptions?.maxLength) count++;
-    if (this.selectedField.templateOptions?.pattern) count++;
-    if (this.selectedField.validators) count += Object.keys(this.selectedField.validators).length;
+    const opts = this.selectedField.templateOptions;
+
+    if (opts.required) count++;
+    if (opts.minLength) count++;
+    if (opts.maxLength) count++;
+    if (opts.pattern) count++;
+    if (this.selectedField.validators) {
+      count += Object.keys(this.selectedField.validators).length;
+    }
 
     return count;
   }
@@ -475,13 +541,34 @@ export class ModelFieldComponent implements OnInit {
     try {
       const schema = JSON.parse(this.schemaJson);
       if (this.schemaFormat === 'formly') {
-        this.modelFields = schema;
+        this.modelFields = this.convertToExtended(schema);
         this.filteredModelFields = [...this.modelFields];
       }
       console.log('Schema loaded successfully');
     } catch (error) {
       console.error('Failed to load schema:', error);
     }
+  }
+
+  // Safe property access methods
+  updateFieldProperty<K extends keyof ExtendedFormlyFieldConfig['templateOptions']>(
+    key: K,
+    value: ExtendedFormlyFieldConfig['templateOptions'][K]
+  ) {
+    if (this.selectedField) {
+      this.selectedField.templateOptions[key] = value;
+    }
+  }
+
+  getFieldProperty<K extends keyof ExtendedFormlyFieldConfig['templateOptions']>(
+    key: K
+  ): ExtendedFormlyFieldConfig['templateOptions'][K] | undefined {
+    return this.selectedField?.templateOptions[key];
+  }
+
+  // Convert regular FormlyFieldConfig to ExtendedFormlyFieldConfig
+  private convertToExtended(fields: FormlyFieldConfig[]): ExtendedFormlyFieldConfig[] {
+    return fields.map(field => this.ensureTemplateOptions(field));
   }
 
   applySchemaChanges() {
