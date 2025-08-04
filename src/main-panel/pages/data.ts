@@ -9,7 +9,7 @@ export const categoryLocatorData = {
     "objectConsentId": null,
     "objectId": "577a0000-d144-b00c-4b63-08dcd8cc078a",
     "nextNode": 5,
-    "uiComponent": 8,
+    "uiComponent": 3,
     "dataDisplay": 8,
     "cardView": 0,
     "imagePath": null,

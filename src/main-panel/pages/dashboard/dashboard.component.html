@@ -3,8 +3,143 @@
     <div class="tw-flex tw-h-full">
         <!-- Left content -->
         <main class="tw-flex-1 tw-p-6">
-            <app-dynamic-ui-router [context]="mainContext" [config]="mainConfig" [isLoading]="isLoading">
-            </app-dynamic-ui-router>
+            <!-- Test Controls -->
+            <div class="tw-mb-6">
+                <h1 class="tw-text-2xl tw-font-bold theme-text-primary tw-mb-4">Dynamic UI Component Testing</h1>
+                
+                <!-- Quick Test Buttons -->
+                <div class="tw-flex tw-gap-4 tw-flex-wrap tw-mb-6">
+                    <button 
+                        (click)="loadGridData()" 
+                        class="tw-px-4 tw-py-2 tw-bg-blue-500 tw-text-white tw-rounded hover:tw-bg-blue-600 tw-transition-colors">
+                        Load Main Data (Popup + Model)
+                    </button>
+                    
+                    <button 
+                        (click)="loadRightPanelData()" 
+                        class="tw-px-4 tw-py-2 tw-bg-green-500 tw-text-white tw-rounded hover:tw-bg-green-600 tw-transition-colors">
+                        Show Right Panel
+                    </button>
+                    
+                    <button 
+                        (click)="openFormModal()" 
+                        class="tw-px-4 tw-py-2 tw-bg-purple-500 tw-text-white tw-rounded hover:tw-bg-purple-600 tw-transition-colors">
+                        Open Form Modal
+                    </button>
+                    
+                    <button 
+                        (click)="testGridView()" 
+                        class="tw-px-4 tw-py-2 tw-bg-orange-500 tw-text-white tw-rounded hover:tw-bg-orange-600 tw-transition-colors">
+                        Test Grid View
+                    </button>
+                    
+                    <button 
+                        (click)="testListView()" 
+                        class="tw-px-4 tw-py-2 tw-bg-teal-500 tw-text-white tw-rounded hover:tw-bg-teal-600 tw-transition-colors">
+                        Test List View
+                    </button>
+
+                    <!-- Reset Button -->
+                    <button 
+                        (click)="resetAllViews()" 
+                        class="tw-px-4 tw-py-2 tw-bg-red-500 tw-text-white tw-rounded hover:tw-bg-red-600 tw-transition-colors">
+                        Reset All Views
+                    </button>
+                </div>
+
+                <!-- Comprehensive Testing Matrix -->
+                <div class="tw-mb-6 tw-p-4 tw-bg-gray-50 tw-rounded-lg">
+                    <h3 class="tw-text-lg tw-font-semibold tw-mb-4">Complete Testing Matrix (90 Combinations)</h3>
+                    
+                    <!-- UI Components Grid -->
+                    <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-3 tw-gap-4">
+                        <div *ngFor="let uiComp of getUIComponents()" class="tw-border tw-rounded-lg tw-p-3">
+                            <h4 class="tw-font-medium tw-mb-2 tw-text-sm">{{uiComp.name}} ({{uiComp.value}})</h4>
+                            <div class="tw-grid tw-grid-cols-2 tw-gap-1">
+                                <button 
+                                    *ngFor="let dataDisp of getDataDisplays()"
+                                    (click)="testUIComponent(uiComp.value, dataDisp.value)"
+                                    class="tw-px-2 tw-py-1 tw-text-xs tw-bg-gray-200 hover:tw-bg-blue-200 tw-rounded tw-transition-colors"
+                                    [title]="uiComp.name + ' + ' + dataDisp.name">
+                                    {{dataDisp.name}}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data Info -->
+                <div *ngIf="mainContext" class="tw-mb-4 tw-p-4 tw-bg-gray-100 tw-rounded-lg">
+                    <p class="tw-text-sm tw-text-gray-600">
+                        <strong>Current:</strong> UI Component: {{mainContext.uiComponent}} | Data Display: {{mainContext.dataDisplay}} | 
+                        Data Items: {{mainContext.sortedByAsc?.length || 0}}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Dynamic Content -->
+            <div class="theme-bg-secondary tw-rounded-lg tw-p-6 theme-shadow-sm">
+                <!-- Split View Layout -->
+                <div *ngIf="showSplitView" class="tw-grid tw-grid-cols-2 tw-gap-4 tw-h-full">
+                    <!-- Left Split -->
+                    <div class="tw-border tw-rounded-lg tw-p-4 theme-bg-primary">
+                        <h3 class="tw-text-lg tw-font-semibold tw-mb-4 theme-text-primary">{{leftSplitConfig?.headerTitle}}</h3>
+                        <app-dynamic-ui-router 
+                            [context]="leftSplitContext" 
+                            [config]="leftSplitConfig">
+                        </app-dynamic-ui-router>
+                    </div>
+                    
+                    <!-- Right Split -->
+                    <div class="tw-border tw-rounded-lg tw-p-4 theme-bg-primary">
+                        <h3 class="tw-text-lg tw-font-semibold tw-mb-4 theme-text-primary">{{rightSplitConfig?.headerTitle}}</h3>
+                        <app-dynamic-ui-router 
+                            [context]="rightSplitContext" 
+                            [config]="rightSplitConfig">
+                        </app-dynamic-ui-router>
+                    </div>
+                </div>
+
+                <!-- Merge View Layout -->
+                <div *ngIf="showMergeView" class="tw-space-y-4">
+                    <!-- Primary Merge Window -->
+                    <div class="tw-border tw-rounded-lg tw-p-4 theme-bg-primary">
+                        <div class="tw-flex tw-justify-between tw-items-center tw-mb-4">
+                            <h3 class="tw-text-lg tw-font-semibold theme-text-primary">{{primaryMergeConfig?.headerTitle}}</h3>
+                            <button class="tw-px-3 tw-py-1 tw-bg-blue-500 tw-text-white tw-rounded tw-text-sm hover:tw-bg-blue-600">
+                                Apply Changes →
+                            </button>
+                        </div>
+                        <app-dynamic-ui-router 
+                            [context]="primaryMergeContext" 
+                            [config]="primaryMergeConfig">
+                        </app-dynamic-ui-router>
+                    </div>
+                    
+                    <!-- Secondary Merge Window -->
+                    <div class="tw-border tw-rounded-lg tw-p-4 theme-bg-primary tw-opacity-75">
+                        <h3 class="tw-text-lg tw-font-semibold tw-mb-4 theme-text-primary">{{secondaryMergeConfig?.headerTitle}}</h3>
+                        <app-dynamic-ui-router 
+                            [context]="secondaryMergeContext" 
+                            [config]="secondaryMergeConfig">
+                        </app-dynamic-ui-router>
+                    </div>
+                </div>
+
+                <!-- Regular Single View -->
+                <div *ngIf="!showSplitView && !showMergeView">
+                    <app-dynamic-ui-router 
+                        *ngIf="mainContext"
+                        [context]="mainContext" 
+                        [config]="mainConfig" 
+                        [isLoading]="isLoading">
+                    </app-dynamic-ui-router>
+                    
+                    <div *ngIf="!mainContext && !isLoading" class="tw-text-center tw-py-12 theme-text-secondary">
+                        <p>Click any test button above to see the dynamic UI components in action</p>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- Right panel (conditional) -->
