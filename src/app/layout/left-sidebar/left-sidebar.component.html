@@ -1,1 +1,53 @@
-<p>left-sidebar works!</p>
+<nz-sider [nzWidth]="260" [nzCollapsed]="isCollapsed" [nzBreakpoint]="'lg'"
+    (nzCollapsedChange)="onCollapsedChange($event)"
+    class="tw-fixed tw-top-[64px] tw-left-0 tw-h-[calc(100vh-64px)] tw-overflow-y-auto tw-overflow-x-hidden theme-bg-secondary tw-border-r theme-border-primary theme-transition">
+
+    <ul nz-menu nzMode="inline" [nzInlineCollapsed]="isCollapsed" nzTheme="light"
+        class="tw-border-r-0 theme-bg-secondary">
+
+        <li nz-menu-item [routerLink]="['/dashboard']" routerLinkActive="router-link-active">
+            <i nz-icon nzType="dashboard"></i><span>Dashboard</span>
+        </li>
+
+        <li nz-submenu nzTitle="Components" nzIcon="appstore">
+            <ul>
+                <li nz-menu-item [routerLink]="['/grid-view']" routerLinkActive="router-link-active">Grid View
+                </li>
+                <li nz-menu-item [routerLink]="['/list-view']" routerLinkActive="router-link-active">List View
+                </li>
+                <li nz-menu-item [routerLink]="['/panel-view']" routerLinkActive="router-link-active">Panel View
+                </li>
+                <li nz-menu-item [routerLink]="['/multi-view']" routerLinkActive="router-link-active">Multi View
+                </li>
+            </ul>
+        </li>
+
+        <li nz-submenu nzTitle="Data Display" nzIcon="table">
+            <ul>
+                <li nz-menu-item [routerLink]="['/html-block']" routerLinkActive="router-link-active">HTML
+                    Blocks</li>
+                <li nz-menu-item [routerLink]="['/template']" routerLinkActive="router-link-active">Templates
+                </li>
+                <li nz-menu-item [routerLink]="['/web-component']" routerLinkActive="router-link-active">Web
+                    Components</li>
+                <li nz-menu-item [routerLink]="['/models']" routerLinkActive="router-link-active">Models</li>
+            </ul>
+        </li>
+
+        <li nz-submenu nzTitle="Forms" nzIcon="form">
+            <ul>
+                <li nz-menu-item [routerLink]="['/form-builder']" routerLinkActive="router-link-active">Form
+                    Builder</li>
+                <li nz-menu-item [routerLink]="['/mode-fields']" routerLinkActive="router-link-active">Model
+                    Fields</li>
+                <li nz-menu-item [routerLink]="['/pre-component']" routerLinkActive="router-link-active">Pre
+                    Components</li>
+            </ul>
+        </li>
+
+        <li nz-menu-item [routerLink]="['/setting']" routerLinkActive="router-link-active">
+            <i nz-icon nzType="setting"></i>
+            <span>Settings</span>
+        </li>
+    </ul>
+</nz-sider>

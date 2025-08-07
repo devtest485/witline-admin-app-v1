@@ -1,1 +1,24 @@
-<p>header works!</p>
+<nz-header
+    class="tw-fixed tw-top-0 tw-left-0 tw-right-0 tw-z-50 tw-flex tw-items-center tw-justify-between tw-px-6 theme-bg-secondary tw-border-b theme-border-primary tw-h-[64px]">
+
+    <div class="tw-flex tw-items-center tw-gap-4">
+        <button nz-button nzType="text" (click)="onToggle()" class="tw-lg:tw-hidden theme-text-primary">
+            <i nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i>
+        </button>
+        <div class="tw-flex tw-items-center tw-gap-3">
+            <div
+                class="tw-w-8 tw-h-8 tw-rounded-lg tw-bg-gradient-to-br tw-from-blue-500 tw-to-purple-600 tw-flex tw-items-center tw-justify-center">
+                <i nz-icon nzType="dashboard" class="tw-text-white tw-text-lg"></i>
+            </div>
+            <h1 class="tw-text-xl tw-font-bold theme-text-primary tw-hidden sm:tw-block">Witline Admin</h1>
+        </div>
+    </div>
+
+    <div class="tw-flex tw-items-center tw-gap-4">
+        <app-theme-toggle></app-theme-toggle>
+        <nz-button-group>
+            <button nz-button nzType="text" class="theme-text-primary"><i nz-icon nzType="setting"></i></button>
+            <button nz-button nzType="text" class="theme-text-primary"><i nz-icon nzType="user"></i></button>
+        </nz-button-group>
+    </div>
+</nz-header>

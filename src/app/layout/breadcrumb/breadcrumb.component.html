@@ -1,1 +1,11 @@
-<p>breadcrumb works!</p>
+<nz-breadcrumb [ngClass]="{ 'tw-left-[260px]': !isCollapsed, 'tw-left-[80px]': isCollapsed }"
+    class="tw-fixed tw-top-[64px] tw-right-0 tw-z-40 tw-p-4 theme-bg-tertiary tw-border-b theme-border-primary">
+
+    <nz-breadcrumb-item>
+        <i nz-icon nzType="home"></i>
+        <span>Home</span>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>
+        <span>Dashboard</span>
+    </nz-breadcrumb-item>
+</nz-breadcrumb>
