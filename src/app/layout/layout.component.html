@@ -1,0 +1,132 @@
+<nz-layout class="tw-h-screen tw-overflow-hidden theme-bg-primary theme-transition">
+
+    <!-- Fixed Header -->
+    <nz-header
+        class="tw-fixed tw-top-0 tw-left-0 tw-right-0 tw-z-50 tw-flex tw-items-center tw-justify-between tw-px-6 theme-bg-secondary tw-border-b theme-border-primary theme-transition tw-h-[64px]">
+
+        <!-- Header content remains the same -->
+        <div class="tw-flex tw-items-center tw-gap-4">
+            <button nz-button nzType="text" (click)="toggleSidebar()" class="tw-lg:tw-hidden theme-text-primary">
+                <i nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i>
+            </button>
+            <div class="tw-flex tw-items-center tw-gap-3">
+                <div
+                    class="tw-w-8 tw-h-8 tw-rounded-lg tw-bg-gradient-to-br tw-from-blue-500 tw-to-purple-600 tw-flex tw-items-center tw-justify-center">
+                    <i nz-icon nzType="dashboard" class="tw-text-white tw-text-lg"></i>
+                </div>
+                <h1 class="tw-text-xl tw-font-bold theme-text-primary tw-hidden sm:tw-block">Witline Admin</h1>
+            </div>
+        </div>
+
+        <!-- Right Controls -->
+        <div class="tw-flex tw-items-center tw-gap-4">
+            <app-theme-toggle></app-theme-toggle>
+            <nz-button-group>
+                <button nz-button nzType="text" class="theme-text-primary">
+                    <i nz-icon nzType="setting"></i>
+                </button>
+                <button nz-button nzType="text" class="theme-text-primary">
+                    <i nz-icon nzType="user"></i>
+                </button>
+            </nz-button-group>
+        </div>
+    </nz-header>
+
+    <!-- Body Layout -->
+    <nz-layout class="tw-pt-[64px] tw-h-full">
+
+        <!-- Fixed Sidebar -->
+        <nz-sider [nzWidth]="260" [nzCollapsed]="isCollapsed" [nzBreakpoint]="'lg'"
+            (nzCollapsedChange)="onCollapsedChange($event)"
+            class="tw-fixed tw-top-16 tw-left-0  tw-overflow-y-auto tw-overflow-x-hidden theme-bg-secondary tw-border-r theme-border-primary theme-transition"
+            [ngClass]="{'tw-h-[calc(100vh-64px)]':isCollapsed}">
+
+            <ul nz-menu nzMode="inline" [nzInlineCollapsed]="isCollapsed" nzTheme="light"
+                class="tw-border-r-0 theme-bg-secondary">
+                <!-- Sidebar menu items -->
+                <li nz-menu-item nzSelected [routerLink]="['/dashboard']" routerLinkActive="router-link-active">
+                    <i nz-icon nzType="dashboard"></i>
+                    <span>Dashboard</span>
+                </li>
+
+                <li nz-submenu nzTitle="Components" nzIcon="appstore">
+                    <ul>
+                        <li nz-menu-item [routerLink]="['/grid-view']" routerLinkActive="router-link-active">Grid View
+                        </li>
+                        <li nz-menu-item [routerLink]="['/list-view']" routerLinkActive="router-link-active">List View
+                        </li>
+                        <li nz-menu-item [routerLink]="['/panel-view']" routerLinkActive="router-link-active">Panel View
+                        </li>
+                        <li nz-menu-item [routerLink]="['/multi-view']" routerLinkActive="router-link-active">Multi View
+                        </li>
+                    </ul>
+                </li>
+
+                <li nz-submenu nzTitle="Data Display" nzIcon="table">
+                    <ul>
+                        <li nz-menu-item [routerLink]="['/html-block']" routerLinkActive="router-link-active">HTML
+                            Blocks</li>
+                        <li nz-menu-item [routerLink]="['/template']" routerLinkActive="router-link-active">Templates
+                        </li>
+                        <li nz-menu-item [routerLink]="['/web-component']" routerLinkActive="router-link-active">Web
+                            Components</li>
+                        <li nz-menu-item [routerLink]="['/models']" routerLinkActive="router-link-active">Models</li>
+                    </ul>
+                </li>
+
+                <li nz-submenu nzTitle="Forms" nzIcon="form">
+                    <ul>
+                        <li nz-menu-item [routerLink]="['/form-builder']" routerLinkActive="router-link-active">Form
+                            Builder</li>
+                        <li nz-menu-item [routerLink]="['/mode-fields']" routerLinkActive="router-link-active">Model
+                            Fields</li>
+                        <li nz-menu-item [routerLink]="['/pre-component']" routerLinkActive="router-link-active">Pre
+                            Components</li>
+                    </ul>
+                </li>
+
+                <li nz-menu-item [routerLink]="['/setting']" routerLinkActive="router-link-active">
+                    <i nz-icon nzType="setting"></i>
+                    <span>Settings</span>
+                </li>
+            </ul>
+        </nz-sider>
+
+        <!-- Content Area -->
+        <nz-layout [ngClass]="{'tw-ml-[260px]': !isCollapsed, 'tw-ml-[80px]': isCollapsed}"
+            class="tw-h-[calc(100vh-64px)] tw-overflow-hidden theme-bg-primary">
+
+            <!-- Fixed Breadcrumb -->
+            <nz-breadcrumb [ngClass]="{'tw-left-[260px]': !isCollapsed, 'tw-left-[80px]': isCollapsed}"
+                class="tw-fixed tw-top-[64px] tw-right-0 tw-z-40 tw-p-4 theme-bg-tertiary tw-border-b theme-border-primary">
+                <nz-breadcrumb-item>
+                    <i nz-icon nzType="home"></i>
+                    <span>Home</span>
+                </nz-breadcrumb-item>
+                <nz-breadcrumb-item>
+                    <span>Dashboard</span>
+                </nz-breadcrumb-item>
+            </nz-breadcrumb>
+
+            <!-- Scrollable Content -->
+            <nz-content class="tw-pt-[112px] tw-px-6 tw-pb-6 tw-h-full tw-overflow-y-auto theme-bg-primary">
+                <router-outlet></router-outlet>
+            </nz-content>
+        </nz-layout>
+
+    </nz-layout>
+
+    <!-- Mobile Drawer (unchanged) -->
+    <nz-drawer [nzVisible]="mobileDrawerVisible" nzPlacement="left" [nzWidth]="260" (nzOnClose)="closeMobileDrawer()"
+        nzTitle="Menu" class="tw-lg:tw-hidden">
+        <div *nzDrawerContent>
+            <ul nz-menu nzMode="inline" class="tw-border-r-0">
+                <li nz-menu-item nzSelected>
+                    <i nz-icon nzType="dashboard"></i>
+                    <span>Dashboard</span>
+                </li>
+                <!-- Add other items -->
+            </ul>
+        </div>
+    </nz-drawer>
+</nz-layout>
